@@ -346,20 +346,7 @@ const AnnotationPage = () => {
 
   {/* Annotated Image Preview removed as per requirements */}
 
-        {/* PDF Download Link */}
-        {submission.pdfUrl && (
-          <div className="mt-6">
-            <a
-              href={getAbsoluteUrl(submission.pdfUrl)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors"
-            >
-              <Download className="h-4 w-4 mr-2" />
-              Download PDF
-            </a>
-          </div>
-        )}
+  // PDF download link removed; PDF is now streamed and downloaded via the button
       </div>
     </Layout>
   );
