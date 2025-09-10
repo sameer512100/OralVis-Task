@@ -126,6 +126,14 @@
         <div class="section-title">SCREENING REPORT:</div>
         <div class="image-container">
             <div class="image-box">
+                <% if (imageUrl) { %>
+                    <img src="<%= imageUrl %>" alt="Original Image">
+                <% } else { %>
+                    <div class="caption">No original image available.</div>
+                <% } %>
+                <div class="caption">Original Image</div>
+            </div>
+            <div class="image-box">
                 <% if (annotatedImageUrl) { %>
                     <img src="<%= annotatedImageUrl %>" alt="Annotated Image">
                 <% } else { %>

@@ -320,19 +320,7 @@ const AnnotationPage = () => {
           generating={generating}
         />
 
-        {/* Annotated Image Preview & Download */}
-        {submission.annotatedImageUrl && (
-          <div className="mt-8">
-            <h2 className="text-lg font-medium text-gray-900 mb-2">
-              Annotated Image Preview
-            </h2>
-            <img
-              src={getAbsoluteUrl(submission.annotatedImageUrl)}
-              alt="Annotated"
-              className="rounded shadow max-w-full mb-2"
-            />
-          </div>
-        )}
+  {/* Annotated Image Preview removed as per requirements */}
 
         {/* PDF Download Link */}
         {submission.pdfUrl && (

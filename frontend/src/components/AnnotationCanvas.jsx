@@ -270,7 +270,11 @@ const AnnotationCanvas = ({
 
         <div className="flex items-center space-x-3">
           <button
-            onClick={() => setAnnotations([])}
+            onClick={() => {
+              setAnnotations([]);
+              setCurrentAnnotation(null);
+              setIsDrawing(false);
+            }}
             className="px-3 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
           >
             Clear All

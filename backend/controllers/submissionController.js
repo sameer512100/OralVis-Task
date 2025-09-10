@@ -107,6 +107,9 @@ export const generatePDF = async (req, res) => {
     const annotatedImageUrl = submission.annotatedImageUrl
       ? `http://localhost:3000${submission.annotatedImageUrl}`
       : "";
+    const imageUrl = submission.imageUrl
+      ? `http://localhost:3000${submission.imageUrl}`
+      : "";
 
     const data = {
       name: submission.name,
@@ -115,6 +118,7 @@ export const generatePDF = async (req, res) => {
       note: submission.note,
       createdAt: submission.createdAt,
       annotatedImageUrl,
+      imageUrl,
       annotationJson: submission.annotationJson,
     };
 
