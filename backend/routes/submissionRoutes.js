@@ -10,6 +10,7 @@ import {
 } from "../controllers/submissionController.js";
 import { protect } from "../middleware/auth.js";
 import { requireRole } from "../middleware/roles.js";
+import { getGeneratedImage } from "../controllers/submissionController.js";
 
 const upload = multer({ dest: "uploads/" });
 const router = express.Router();
@@ -23,6 +24,7 @@ router.post(
   createSubmission
 );
 router.get("/mine", protect, requireRole("patient"), getMySubmissions);
+router.get("/:id/generated-image", protect, getGeneratedImage);
 
 // Admin routes
 router.get("/", protect, requireRole("admin"), getAllSubmissions);

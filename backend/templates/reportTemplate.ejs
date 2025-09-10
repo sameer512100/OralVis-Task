@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oral Health Screening Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            color: #4b0082;
+            font-size: 24px;
+            margin: 0;
+        }
+        .patient-info {
+            background-color: #e6e6fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .patient-info p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        .section-title {
+            font-weight: bold;
+            font-size: 18px;
+            margin-top: 25px;
+            margin-bottom: 10px;
+            color: #4b0082;
+            text-align: center;
+        }
+        .image-container {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .image-box {
+            width: 30%;
+            text-align: center;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .image-box img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        .image-box .caption {
+            font-size: 12px;
+            font-weight: bold;
+            padding: 8px 0;
+            background-color: #f0f0f0;
+        }
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+        }
+        .color-box {
+            width: 15px;
+            height: 15px;
+            border-radius: 4px;
+            margin-right: 5px;
+        }
+        .recommendations {
+            background-color: #e6f7ff;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .recommendations h3 {
+            margin-top: 0;
+            color: #004085;
+            text-align: center;
+        }
+        .recommendations ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .recommendations li {
+            margin-bottom: 10px;
+            padding-left: 15px;
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Oral Health Screening Report</h1>
+        </div>
+        <div class="patient-info">
+            <p><strong>Name:</strong> <%= name %></p>
+            <p><strong>Patient ID:</strong> <%= patientId %></p>
+            <p><strong>Email:</strong> <%= email %></p>
+            <p><strong>Date:</strong> <%= createdAt %></p>
+        </div>
+
+        <div class="section-title">SCREENING REPORT:</div>
+        <div class="image-container">
+            <div class="image-box">
+                <img src="<%= annotatedImageUrl %>" alt="Annotated Image">
+                <div class="caption">Annotated Image</div>
+            </div>
+            <!-- Additional images could be added here if needed -->
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="color-box" style="background-color: #663399;"></div><span>Inflammed / Red gums</span>
+            </div>
+            <div class="legend-item">
+                <div class="color-box" style="background-color: #ffff00;"></div><span>Malaligned</span>
+            </div>
+            <div class="legend-item">
+                <div class="color-box" style="background-color: #9900ff;"></div><span>Receded gums</span>
+            </div>
+            <div class="legend-item">
+                <div class="color-box" style="background-color: #ff0000;"></div><span>Stains</span>
+            </div>
+            <div class="legend-item">
+                <div class="color-box" style="background-color: #00aaff;"></div><span>Attrition</span>
+            </div>
+            <div class="legend-item">
+                <div class="color-box" style="background-color: #cc00ff;"></div><span>Crowns</span>
+            </div>
+        </div>
+
+        <div class="section-title">TREATMENT RECOMMENDATIONS:</div>
+        <div class="recommendations">
+            <p>
+                <!-- This is a simplified example. In a real-world app, you'd generate this from the structured annotation data. -->
+                <% if (annotationJson && annotationJson.recommendations) { %>
+                    <% annotationJson.recommendations.forEach(rec => { %>
+                        <p><strong><%= rec.title %>:</strong> <%= rec.text %></p>
+                    <% }); %>
+                <% } else { %>
+                    <p>No recommendations available.</p>
+                <% } %>
+            </p>
+        </div>
+    </div>
+</body>
+</html>
