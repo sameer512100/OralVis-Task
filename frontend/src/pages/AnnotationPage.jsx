@@ -343,10 +343,6 @@ const AnnotationPage = () => {
           saving={saving}
           generating={generating}
         />
-
-  {/* Annotated Image Preview removed as per requirements */}
-
-  // PDF download link removed; PDF is now streamed and downloaded via the button
       </div>
     </Layout>
   );
