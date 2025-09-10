@@ -119,16 +119,16 @@ npm run dev
 ## Backend API Endpoints
 
 ### Auth
-- `POST /api/auth/register` — Register a new user
-- `POST /api/auth/login` — Login and receive JWT
+- `POST /auth/register` — Register a new user
+- `POST /auth/login` — Login and receive JWT
 
 ### Submissions
-- `POST /api/submissions` — Submit annotated image/report
-- `GET /api/submissions` — Get all submissions (admin)
-- `GET /api/submissions/:id` — Get a specific submission
-- `GET /api/submissions/user/:userId` — Get submissions for a user
-- `PUT /api/submissions/:id` — Update a submission
-- `DELETE /api/submissions/:id` — Delete a submission
+- `POST /submissions` — Submit annotated image/report
+- `GET /submissions` — Get all submissions (admin)
+- `GET /submissions/:id` — Get a specific submission
+- `GET /submissions/user/:userId` — Get submissions for a user
+- `PUT /submissions/:id` — Update a submission
+- `DELETE /submissions/:id` — Delete a submission
 
 ### File Uploads
 - Images and reports are uploaded to `backend/uploads/`
