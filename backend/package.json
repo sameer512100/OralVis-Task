@@ -1,0 +1,25 @@
+{
+  "name": "oralvis-backend",
+  "version": "1.0.0",
+  "description": "Task for SDE intern at OralVis",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon server.js",
+    "start": "nodemon server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.18.1",
+    "multer": "^2.0.2",
+    "nodemon": "^3.1.10",
+    "pdfkit": "^0.17.2"
+  }
+}
