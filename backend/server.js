@@ -14,8 +14,14 @@ const app = express();
 
 // Middlewares
 app.use(cors());
-app.use(express.json()); // Parse JSON requests
-app.use("/uploads", express.static("uploads")); // Serve static files
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ limit: "10mb", extended: true }));
+app.use("/uploads", (req, res, next) => {
+  if (req.path.endsWith(".pdf")) {
+    res.setHeader("Content-Type", "application/pdf");
+  }
+  next();
+}, express.static("uploads")); // Serve static files
 
 // Routes
 app.use("/auth", authRoutes);

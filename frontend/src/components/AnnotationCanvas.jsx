@@ -20,6 +20,7 @@ import {
 
 const AnnotationCanvas = ({
   imageUrl,
+  annotationJson,
   onSave,
   onGeneratePDF,
   saving,
@@ -32,6 +33,7 @@ const AnnotationCanvas = ({
   const [currentAnnotation, setCurrentAnnotation] = useState(null);
   const stageRef = useRef();
 
+  // Load image
   useEffect(() => {
     if (imageUrl) {
       const img = new window.Image();
@@ -42,6 +44,15 @@ const AnnotationCanvas = ({
       img.src = imageUrl;
     }
   }, [imageUrl]);
+
+  // Load existing annotations when annotationJson changes
+  useEffect(() => {
+    if (annotationJson && Array.isArray(annotationJson.annotations)) {
+      setAnnotations(annotationJson.annotations);
+    } else {
+      setAnnotations([]);
+    }
+  }, [annotationJson, imageUrl]);
 
   const handleMouseDown = (e) => {
     if (tool === "select") return;
@@ -149,17 +160,13 @@ const AnnotationCanvas = ({
   };
 
   const handleSave = async () => {
-    if (!stageRef.current) return;
+  if (!stageRef.current) return;
 
-    // Get the canvas as base64
-    const dataURL = stageRef.current.toDataURL();
+  // Get the canvas as base64
+  const dataURL = stageRef.current.toDataURL();
 
-    const annotationData = {
-      annotations: annotations,
-      annotatedImageBase64: dataURL,
-    };
-
-    await onSave(annotationData);
+  // Only pass annotations; let parent handle base64 image
+  await onSave({ annotations }, dataURL);
   };
 
   const renderAnnotation = (annotation) => {

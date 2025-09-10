@@ -1,5 +1,6 @@
 import express from "express";
 import multer from "multer";
+import path from "path";
 import {
   createSubmission,
   getMySubmissions,
@@ -7,12 +8,21 @@ import {
   getSubmission,
   annotateSubmission,
   generatePDF,
+  getGeneratedImage,
 } from "../controllers/submissionController.js";
 import { protect } from "../middleware/auth.js";
 import { requireRole } from "../middleware/roles.js";
-import { getGeneratedImage } from "../controllers/submissionController.js";
 
-const upload = multer({ dest: "uploads/" });
+// Multer storage with extension preservation
+const storage = multer.diskStorage({
+  destination: "uploads/",
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, `${Date.now()}${ext}`);
+  },
+});
+const upload = multer({ storage });
+
 const router = express.Router();
 
 // Patient routes

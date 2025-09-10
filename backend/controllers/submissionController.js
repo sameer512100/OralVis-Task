@@ -4,6 +4,7 @@ import fs from "fs";
 import path from "path";
 import puppeteer from "puppeteer";
 import ejs from "ejs";
+import { v4 as uuidv4 } from "uuid";
 
 // Helper function to render the HTML template
 const renderTemplate = async (templatePath, data) => {
@@ -18,15 +19,12 @@ export const getGeneratedImage = async (req, res) => {
     return res.status(404).send("Image not found");
   }
 
-  // Load the original image from disk
   const imagePath = path.join("uploads", path.basename(submission.imageUrl));
   try {
     const img = await loadImage(imagePath);
     const canvas = createCanvas(img.width, img.height);
     const ctx = canvas.getContext("2d");
     ctx.drawImage(img, 0, 0);
-
-    // Optionally, draw annotations or overlays here
 
     res.setHeader("Content-Type", "image/png");
     canvas.pngStream().pipe(res);
@@ -71,7 +69,26 @@ export const getSubmission = async (req, res) => {
 };
 
 export const annotateSubmission = async (req, res) => {
-  const { annotationJson, annotatedImageUrl } = req.body;
+  const { annotationJson, annotatedImageBase64 } = req.body;
+  let annotatedImageUrl = "";
+
+  if (annotatedImageBase64) {
+    const filename = `annotated_${uuidv4()}.png`;
+    const filePath = path.join("uploads", filename);
+    const base64Data = annotatedImageBase64.replace(
+      /^data:image\/png;base64,/,
+      ""
+    );
+    try {
+      fs.writeFileSync(filePath, base64Data, "base64");
+      annotatedImageUrl = `/uploads/${filename}`;
+    } catch (err) {
+      return res
+        .status(500)
+        .json({ message: "Failed to save annotated image" });
+    }
+  }
+
   const submission = await Submission.findByIdAndUpdate(
     req.params.id,
     { annotationJson, annotatedImageUrl, status: "annotated" },
@@ -87,15 +104,17 @@ export const generatePDF = async (req, res) => {
   }
 
   try {
+    const annotatedImageUrl = submission.annotatedImageUrl
+      ? `http://localhost:3000${submission.annotatedImageUrl}`
+      : "";
+
     const data = {
       name: submission.name,
       patientId: submission.patientId,
       email: submission.email,
       note: submission.note,
       createdAt: submission.createdAt,
-      imageUrl: submission.imageUrl,
-      annotatedImageUrl: submission.annotatedImageUrl,
-      // You may need to process annotationJson here to match your template format
+      annotatedImageUrl,
       annotationJson: submission.annotationJson,
     };
 
@@ -108,14 +127,11 @@ export const generatePDF = async (req, res) => {
 
     const browser = await puppeteer.launch({
       headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"], // Required for some environments
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
     const page = await browser.newPage();
 
-    // Serve static files to Puppeteer to access images
-    await page.goto(`data:text/html,${htmlContent}`, {
-      waitUntil: "networkidle0",
-    });
+    await page.setContent(htmlContent, { waitUntil: "networkidle0" });
 
     const pdfBuffer = await page.pdf({
       format: "A4",
@@ -133,7 +149,6 @@ export const generatePDF = async (req, res) => {
 
     res.json({ pdfUrl: submission.pdfUrl });
   } catch (error) {
-    console.error("PDF generation failed:", error);
     res.status(500).json({ message: "PDF generation failed." });
   }
 };

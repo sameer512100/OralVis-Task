@@ -9,7 +9,16 @@ import {
   CheckCircle,
   AlertCircle,
   Users,
+  Download,
 } from "lucide-react";
+
+// Helper to get absolute image URLs from backend
+const API_BASE_URL = "http://localhost:3000";
+function getAbsoluteUrl(url) {
+  if (!url) return "";
+  if (url.startsWith("http")) return url;
+  return `${API_BASE_URL}${url}`;
+}
 
 const AdminDashboard = () => {
   const [submissions, setSubmissions] = useState([]);
@@ -189,6 +198,9 @@ const AdminDashboard = () => {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Image
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Patient Info
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -208,6 +220,15 @@ const AdminDashboard = () => {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {submissions.map((submission) => (
                     <tr key={submission._id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <img
+                          src={getAbsoluteUrl(
+                            submission.annotatedImageUrl || submission.imageUrl
+                          )}
+                          alt="Submission"
+                          className="h-16 w-16 object-cover rounded shadow"
+                        />
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
                           {submission.name}
@@ -237,14 +258,25 @@ const AdminDashboard = () => {
                       <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
                         {submission.note || "-"}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex flex-col gap-2">
                         <Link
                           to={`/admin/submission/${submission._id}`}
-                          className="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors"
+                          className="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors mb-1"
                         >
                           <Eye className="h-4 w-4 mr-1" />
-                          Annotate
+                          Annotate / View
                         </Link>
+                        {submission.pdfUrl && (
+                          <a
+                            href={getAbsoluteUrl(submission.pdfUrl)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors"
+                          >
+                            <Download className="h-4 w-4 mr-2" />
+                            Download PDF
+                          </a>
+                        )}
                       </td>
                     </tr>
                   ))}

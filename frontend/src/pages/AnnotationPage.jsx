@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   getSubmissionById,
@@ -7,7 +7,14 @@ import {
 } from "../api/submissions";
 import Layout from "../components/Layout";
 import AnnotationCanvas from "../components/AnnotationCanvas";
-import { ArrowLeft, User, Hash, Mail, FileText } from "lucide-react";
+import { ArrowLeft, User, Hash, Mail, FileText, Download } from "lucide-react";
+
+const API_BASE_URL = "http://localhost:3000";
+function getAbsoluteUrl(url) {
+  if (!url) return "";
+  if (url.startsWith("http")) return url;
+  return `${API_BASE_URL}${url}`;
+}
 
 const AnnotationPage = () => {
   const { id } = useParams();
@@ -18,37 +25,90 @@ const AnnotationPage = () => {
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [recommendations, setRecommendations] = useState([]);
+  const [newRecTitle, setNewRecTitle] = useState("");
+  const [newRecText, setNewRecText] = useState("");
+  const stageRef = useRef();
 
   useEffect(() => {
     loadSubmission();
+    // eslint-disable-next-line
   }, [id]);
 
   const loadSubmission = async () => {
     try {
       const data = await getSubmissionById(id);
       setSubmission(data);
-    } catch (error) {
-      setError("Failed to load submission");
+      setError("");
+      // Load recommendations from annotationJson if available
+      if (
+        data.annotationJson &&
+        Array.isArray(data.annotationJson.recommendations)
+      ) {
+        setRecommendations(data.annotationJson.recommendations);
+      } else {
+        setRecommendations([]);
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to load submission");
+      setSubmission(null);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSaveAnnotation = async (annotationData) => {
+  const handleSaveAnnotation = async (annotationData, canvasDataUrl) => {
     setSaving(true);
     setError("");
     setSuccess("");
 
     try {
-      await saveAnnotation(id, annotationData);
+      // Build annotationJson with recommendations
+      const annotationJson = {
+        ...annotationData,
+        recommendations: recommendations,
+      };
+
+      // Send annotationJson and annotatedImageBase64 at top level
+      await saveAnnotation(id, {
+        annotationJson,
+        annotatedImageBase64: canvasDataUrl,
+      });
+
       setSuccess("Annotation saved successfully!");
-      // Reload submission to get updated status
       await loadSubmission();
     } catch (error) {
       setError(error.response?.data?.message || "Failed to save annotation");
     } finally {
       setSaving(false);
     }
+  };
+
+  // Download annotated image
+  const handleDownloadAnnotatedImage = () => {
+    if (!submission.annotatedImageUrl) return;
+    const link = document.createElement("a");
+    link.href = getAbsoluteUrl(submission.annotatedImageUrl);
+    link.download = `annotated_${submission.patientId || submission._id}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Add recommendation
+  const handleAddRecommendation = () => {
+    if (!newRecTitle.trim() || !newRecText.trim()) return;
+    setRecommendations((prev) => [
+      ...prev,
+      { title: newRecTitle, text: newRecText },
+    ]);
+    setNewRecTitle("");
+    setNewRecText("");
+  };
+
+  // Remove recommendation
+  const handleRemoveRecommendation = (idx) => {
+    setRecommendations((prev) => prev.filter((_, i) => i !== idx));
   };
 
   const handleGeneratePDF = async () => {
@@ -59,7 +119,6 @@ const AnnotationPage = () => {
     try {
       await generatePDF(id);
       setSuccess("PDF generated successfully!");
-      // Reload submission to get updated status and PDF URL
       await loadSubmission();
     } catch (error) {
       setError(error.response?.data?.message || "Failed to generate PDF");
@@ -73,6 +132,16 @@ const AnnotationPage = () => {
       <Layout>
         <div className="flex justify-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (error) {
+    return (
+      <Layout>
+        <div className="text-center py-12">
+          <p className="text-red-500">{error}</p>
         </div>
       </Layout>
     );
@@ -191,14 +260,94 @@ const AnnotationPage = () => {
           </div>
         )}
 
+        {/* Recommendations UI */}
+        <div className="bg-white shadow rounded-lg mb-6 p-6">
+          <h2 className="text-lg font-medium text-gray-900 mb-2">
+            Treatment Recommendations
+          </h2>
+          <div className="flex flex-col sm:flex-row gap-2 mb-4">
+            <input
+              type="text"
+              placeholder="Title (e.g. Oral Hygiene)"
+              className="border rounded px-2 py-1 flex-1"
+              value={newRecTitle}
+              onChange={(e) => setNewRecTitle(e.target.value)}
+            />
+            <input
+              type="text"
+              placeholder="Recommendation text"
+              className="border rounded px-2 py-1 flex-2"
+              value={newRecText}
+              onChange={(e) => setNewRecText(e.target.value)}
+            />
+            <button
+              onClick={handleAddRecommendation}
+              className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              Add
+            </button>
+          </div>
+          <ul className="space-y-2">
+            {recommendations.map((rec, idx) => (
+              <li
+                key={idx}
+                className="flex items-center justify-between bg-blue-50 rounded px-3 py-2"
+              >
+                <span>
+                  <strong>{rec.title}:</strong> {rec.text}
+                </span>
+                <button
+                  onClick={() => handleRemoveRecommendation(idx)}
+                  className="ml-2 px-2 py-1 text-xs bg-red-100 text-red-700 rounded"
+                >
+                  Remove
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+
         {/* Annotation Canvas */}
         <AnnotationCanvas
-          imageUrl={submission.imageUrl}
+          ref={stageRef}
+          imageUrl={getAbsoluteUrl(
+            submission.annotatedImageUrl || submission.imageUrl
+          )}
+          annotationJson={submission.annotationJson}
           onSave={handleSaveAnnotation}
           onGeneratePDF={handleGeneratePDF}
           saving={saving}
           generating={generating}
         />
+
+        {/* Annotated Image Preview & Download */}
+        {submission.annotatedImageUrl && (
+          <div className="mt-8">
+            <h2 className="text-lg font-medium text-gray-900 mb-2">
+              Annotated Image Preview
+            </h2>
+            <img
+              src={getAbsoluteUrl(submission.annotatedImageUrl)}
+              alt="Annotated"
+              className="rounded shadow max-w-full mb-2"
+            />
+          </div>
+        )}
+
+        {/* PDF Download Link */}
+        {submission.pdfUrl && (
+          <div className="mt-6">
+            <a
+              href={getAbsoluteUrl(submission.pdfUrl)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Download PDF
+            </a>
+          </div>
+        )}
       </div>
     </Layout>
   );
