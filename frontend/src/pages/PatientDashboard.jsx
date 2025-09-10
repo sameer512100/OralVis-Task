@@ -317,7 +317,7 @@ const PatientDashboard = () => {
                       {submission.status === "reported" &&
                         submission.pdfUrl && (
                           <a
-                            href={`http://localhost:3000${submission.pdfUrl}`}
+                            href={`https://oralvis-backend-dxgf.onrender.com${submission.pdfUrl}`}
                             download
                             className="flex items-center px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors"
                           >

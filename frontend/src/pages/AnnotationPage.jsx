@@ -9,7 +9,7 @@ import Layout from "../components/Layout";
 import AnnotationCanvas from "../components/AnnotationCanvas";
 import { ArrowLeft, User, Hash, Mail, FileText, Download } from "lucide-react";
 
-const API_BASE_URL = "http://localhost:3000";
+const API_BASE_URL = "https://oralvis-backend-dxgf.onrender.com";
 function getAbsoluteUrl(url) {
   if (!url) return "";
   if (url.startsWith("http")) return url;
