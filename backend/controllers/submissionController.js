@@ -105,10 +105,10 @@ export const generatePDF = async (req, res) => {
 
   try {
     const annotatedImageUrl = submission.annotatedImageUrl
-      ? `http://localhost:3000${submission.annotatedImageUrl}`
+    ? `https://oralvis-backend-dxgf.onrender.com${submission.annotatedImageUrl}`
       : "";
     const imageUrl = submission.imageUrl
-      ? `http://localhost:3000${submission.imageUrl}`
+    ? `https://oralvis-backend-dxgf.onrender.com${submission.imageUrl}`
       : "";
 
     const data = {
