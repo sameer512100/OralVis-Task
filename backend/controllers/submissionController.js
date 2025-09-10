@@ -144,14 +144,15 @@ export const generatePDF = async (req, res) => {
 
     await browser.close();
 
-    const pdfPath = `uploads/report_${submission._id}.pdf`;
-    fs.writeFileSync(pdfPath, pdfBuffer);
-
-    submission.pdfUrl = `/uploads/report_${submission._id}.pdf`;
+    // Stream PDF directly to client
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="report_${submission._id}.pdf"`
+    });
+    res.send(pdfBuffer);
+    // Optionally, update status in DB (but no pdfUrl)
     submission.status = "reported";
     await submission.save();
-
-    res.json({ pdfUrl: submission.pdfUrl });
   } catch (error) {
     res.status(500).json({ message: "PDF generation failed." });
   }
