@@ -3,7 +3,7 @@ import AWS from "aws-sdk";
 import { createCanvas, loadImage } from "canvas";
 import fs from "fs";
 import path from "path";
-import puppeteer from "puppeteer";
+import puppeteer from "puppeteer"; // ✅ use full puppeteer, not puppeteer-core
 import ejs from "ejs";
 import { v4 as uuidv4 } from "uuid";
 
@@ -50,16 +50,20 @@ export const createSubmission = async (req, res) => {
     const base64Data = imageBase64.replace(/^data:image\/png;base64,/, "");
     const buffer = Buffer.from(base64Data, "base64");
     try {
-      const s3Result = await s3.upload({
-        Bucket: S3_BUCKET,
-        Key: filename,
-        Body: buffer,
-        ContentEncoding: "base64",
-        ContentType: "image/png"
-      }).promise();
+      const s3Result = await s3
+        .upload({
+          Bucket: S3_BUCKET,
+          Key: filename,
+          Body: buffer,
+          ContentEncoding: "base64",
+          ContentType: "image/png",
+        })
+        .promise();
       imageUrl = s3Result.Location;
     } catch (err) {
-      return res.status(500).json({ message: "Failed to upload image to S3", error: err.message });
+      return res
+        .status(500)
+        .json({ message: "Failed to upload image to S3", error: err.message });
     }
   }
   try {
@@ -106,18 +110,21 @@ export const annotateSubmission = async (req, res) => {
     );
     const buffer = Buffer.from(base64Data, "base64");
     try {
-      const s3Result = await s3.upload({
-        Bucket: S3_BUCKET,
-        Key: filename,
-        Body: buffer,
-        ContentEncoding: "base64",
-        ContentType: "image/png"
-      }).promise();
+      const s3Result = await s3
+        .upload({
+          Bucket: S3_BUCKET,
+          Key: filename,
+          Body: buffer,
+          ContentEncoding: "base64",
+          ContentType: "image/png",
+        })
+        .promise();
       annotatedImageUrl = s3Result.Location;
     } catch (err) {
-      return res
-        .status(500)
-        .json({ message: "Failed to upload annotated image to S3", error: err.message });
+      return res.status(500).json({
+        message: "Failed to upload annotated image to S3",
+        error: err.message,
+      });
     }
   }
 
@@ -136,8 +143,8 @@ export const generatePDF = async (req, res) => {
   }
 
   try {
-  const annotatedImageUrl = submission.annotatedImageUrl || "";
-  const imageUrl = submission.imageUrl || "";
+    const annotatedImageUrl = submission.annotatedImageUrl || "";
+    const imageUrl = submission.imageUrl || "";
 
     const data = {
       name: submission.name,
@@ -157,12 +164,25 @@ export const generatePDF = async (req, res) => {
     );
     const htmlContent = await renderTemplate(templatePath, data);
 
+    // ✅ Render-compatible Puppeteer launch
     const browser = await puppeteer.launch({
-      headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      headless: "new",
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-accelerated-2d-canvas",
+        "--no-first-run",
+        "--no-zygote",
+        "--single-process",
+        "--disable-gpu",
+      ],
+      executablePath:
+        process.env.PUPPETEER_EXECUTABLE_PATH ||
+        (await puppeteer.executablePath()),
     });
-    const page = await browser.newPage();
 
+    const page = await browser.newPage();
     await page.setContent(htmlContent, { waitUntil: "networkidle0" });
 
     const pdfBuffer = await page.pdf({
@@ -176,16 +196,21 @@ export const generatePDF = async (req, res) => {
     const pdfFilename = `report_${submission._id}_${Date.now()}.pdf`;
     let pdfUrl = "";
     try {
-      const s3Result = await s3.upload({
-        Bucket: S3_BUCKET,
-        Key: pdfFilename,
-        Body: pdfBuffer,
-        ContentType: "application/pdf"
-      }).promise();
+      const s3Result = await s3
+        .upload({
+          Bucket: S3_BUCKET,
+          Key: pdfFilename,
+          Body: pdfBuffer,
+          ContentType: "application/pdf",
+        })
+        .promise();
       pdfUrl = s3Result.Location;
     } catch (err) {
       console.error("PDF S3 upload error:", err);
-      return res.status(500).json({ message: "Failed to upload PDF to S3", error: err.message });
+      return res.status(500).json({
+        message: "Failed to upload PDF to S3",
+        error: err.message,
+      });
     }
 
     // Update submission with PDF URL and status
@@ -203,6 +228,9 @@ export const generatePDF = async (req, res) => {
     if (error.message) {
       console.error("Error message:", error.message);
     }
-    res.status(500).json({ message: "PDF generation failed.", error: error.message || error });
+    res.status(500).json({
+      message: "PDF generation failed.",
+      error: error.message || error,
+    });
   }
 };
