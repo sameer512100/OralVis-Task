@@ -8,6 +8,7 @@ import {
 import Layout from "../components/Layout";
 import AnnotationCanvas from "../components/AnnotationCanvas";
 import { ArrowLeft, User, Hash, Mail, FileText, Download } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 const API_BASE_URL = "https://oralvis-backend-dxgf.onrender.com";
 function getAbsoluteUrl(url) {
@@ -29,6 +30,8 @@ const AnnotationPage = () => {
   const [newRecTitle, setNewRecTitle] = useState("");
   const [newRecText, setNewRecText] = useState("");
   const stageRef = useRef();
+  // Import AuthContext to get token
+  const { token } = useAuth();
 
   useEffect(() => {
     loadSubmission();
@@ -117,12 +120,13 @@ const AnnotationPage = () => {
     setSuccess("");
 
     try {
-      // Make the POST request to generate the PDF
+      // Make the POST request to generate the PDF, including Authorization header
       const response = await fetch(`${API_BASE_URL}/submissions/${id}/generate-pdf`, {
         method: "POST",
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
+          ...(token ? { "Authorization": `Bearer ${token}` } : {}),
         },
       });
 
