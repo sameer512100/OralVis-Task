@@ -117,13 +117,12 @@ const AnnotationPage = () => {
     setSuccess("");
 
     try {
-      // Make the POST request and get the PDF as a blob
+      // Make the POST request to generate the PDF
       const response = await fetch(`${API_BASE_URL}/submissions/${id}/generate-pdf`, {
         method: "POST",
-        credentials: "include", // if you use cookies/auth
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          // Add auth headers if needed
         },
       });
 
@@ -131,18 +130,8 @@ const AnnotationPage = () => {
         throw new Error("Failed to generate PDF");
       }
 
-      const blob = await response.blob();
-      // Create a download link and trigger download
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `report_${id}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-
-      setSuccess("PDF generated and downloaded!");
+      // After successful generation, reload submission to get the new pdfUrl
+      setSuccess("PDF generated successfully!");
       await loadSubmission();
     } catch (error) {
       setError(error.message || "Failed to generate PDF");
