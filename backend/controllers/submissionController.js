@@ -55,8 +55,7 @@ export const createSubmission = async (req, res) => {
         Key: filename,
         Body: buffer,
         ContentEncoding: "base64",
-        ContentType: "image/png",
-        ACL: "public-read"
+        ContentType: "image/png"
       }).promise();
       imageUrl = s3Result.Location;
     } catch (err) {
@@ -112,8 +111,7 @@ export const annotateSubmission = async (req, res) => {
         Key: filename,
         Body: buffer,
         ContentEncoding: "base64",
-        ContentType: "image/png",
-        ACL: "public-read"
+        ContentType: "image/png"
       }).promise();
       annotatedImageUrl = s3Result.Location;
     } catch (err) {
@@ -182,8 +180,7 @@ export const generatePDF = async (req, res) => {
         Bucket: S3_BUCKET,
         Key: pdfFilename,
         Body: pdfBuffer,
-        ContentType: "application/pdf",
-        ACL: "public-read"
+        ContentType: "application/pdf"
       }).promise();
       pdfUrl = s3Result.Location;
     } catch (err) {
