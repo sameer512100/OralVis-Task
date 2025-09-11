@@ -197,6 +197,12 @@ export const generatePDF = async (req, res) => {
     res.json({ pdfUrl });
   } catch (error) {
     console.error("PDF generation error:", error);
-    res.status(500).json({ message: "PDF generation failed." });
+    if (error.stack) {
+      console.error("Stack trace:", error.stack);
+    }
+    if (error.message) {
+      console.error("Error message:", error.message);
+    }
+    res.status(500).json({ message: "PDF generation failed.", error: error.message || error });
   }
 };
