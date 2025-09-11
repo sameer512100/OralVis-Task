@@ -1,10 +1,19 @@
 import Submission from "../models/submissionModel.js";
+import AWS from "aws-sdk";
 import { createCanvas, loadImage } from "canvas";
 import fs from "fs";
 import path from "path";
 import puppeteer from "puppeteer";
 import ejs from "ejs";
 import { v4 as uuidv4 } from "uuid";
+
+// Configure AWS S3
+const s3 = new AWS.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: process.env.AWS_REGION,
+});
+const S3_BUCKET = process.env.AWS_S3_BUCKET;
 
 // Helper function to render the HTML template
 const renderTemplate = async (templatePath, data) => {
@@ -74,18 +83,25 @@ export const annotateSubmission = async (req, res) => {
 
   if (annotatedImageBase64) {
     const filename = `annotated_${uuidv4()}.png`;
-    const filePath = path.join("uploads", filename);
     const base64Data = annotatedImageBase64.replace(
       /^data:image\/png;base64,/,
       ""
     );
+    const buffer = Buffer.from(base64Data, "base64");
     try {
-      fs.writeFileSync(filePath, base64Data, "base64");
-      annotatedImageUrl = `/uploads/${filename}`;
+      const s3Result = await s3.upload({
+        Bucket: S3_BUCKET,
+        Key: filename,
+        Body: buffer,
+        ContentEncoding: "base64",
+        ContentType: "image/png",
+        ACL: "public-read"
+      }).promise();
+      annotatedImageUrl = s3Result.Location;
     } catch (err) {
       return res
         .status(500)
-        .json({ message: "Failed to save annotated image" });
+        .json({ message: "Failed to upload annotated image to S3", error: err.message });
     }
   }
 
@@ -104,9 +120,7 @@ export const generatePDF = async (req, res) => {
   }
 
   try {
-    const annotatedImageUrl = submission.annotatedImageUrl
-    ? `https://oralvis-backend-dxgf.onrender.com${submission.annotatedImageUrl}`
-      : "";
+  const annotatedImageUrl = submission.annotatedImageUrl || "";
     const imageUrl = submission.imageUrl
     ? `https://oralvis-backend-dxgf.onrender.com${submission.imageUrl}`
       : "";

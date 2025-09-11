@@ -89,13 +89,13 @@ const AnnotationPage = () => {
 
   // Download annotated image
   const handleDownloadAnnotatedImage = () => {
-    if (!submission.annotatedImageUrl) return;
-    const link = document.createElement("a");
-    link.href = getAbsoluteUrl(submission.annotatedImageUrl);
-    link.download = `annotated_${submission.patientId || submission._id}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  if (!submission.annotatedImageUrl) return;
+  const link = document.createElement("a");
+  link.href = submission.annotatedImageUrl;
+  link.download = `annotated_${submission.patientId || submission._id}.png`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
   };
 
   // Add recommendation
@@ -327,9 +327,7 @@ const AnnotationPage = () => {
         {/* Annotation Canvas */}
         <AnnotationCanvas
           ref={stageRef}
-          imageUrl={getAbsoluteUrl(
-            submission.annotatedImageUrl || submission.imageUrl
-          )}
+          imageUrl={submission.annotatedImageUrl || submission.imageUrl}
           annotationJson={submission.annotationJson}
           onSave={handleSaveAnnotation}
           onGeneratePDF={handleGeneratePDF}
