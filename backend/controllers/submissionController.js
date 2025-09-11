@@ -154,6 +154,7 @@ export const generatePDF = async (req, res) => {
     submission.status = "reported";
     await submission.save();
   } catch (error) {
+    console.error("PDF generation error:", error);
     res.status(500).json({ message: "PDF generation failed." });
   }
 };
