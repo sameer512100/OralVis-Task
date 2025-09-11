@@ -165,6 +165,7 @@ export const generatePDF = async (req, res) => {
     const htmlContent = await renderTemplate(templatePath, data);
 
     // ✅ Render-compatible Puppeteer launch
+    // ✅ Render-compatible Puppeteer launch
     const browser = await puppeteer.launch({
       headless: "new",
       args: [
@@ -177,9 +178,7 @@ export const generatePDF = async (req, res) => {
         "--single-process",
         "--disable-gpu",
       ],
-      executablePath:
-        process.env.PUPPETEER_EXECUTABLE_PATH ||
-        (await puppeteer.executablePath()),
+      executablePath: puppeteer.executablePath(), // ✅ no await, no env var needed
     });
 
     const page = await browser.newPage();
