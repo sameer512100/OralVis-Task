@@ -184,7 +184,6 @@ export const generatePDF = async (req, res) => {
           "--single-process",
           "--disable-gpu",
         ],
-        executablePath: puppeteer.executablePath(),
       });
     } catch (err) {
       console.error("Puppeteer launch error:", err);
