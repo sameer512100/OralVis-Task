@@ -53,10 +53,16 @@ const PatientDashboard = () => {
   };
 
   const handleFileChange = (e) => {
-    setFormData({
-      ...formData,
-      image: e.target.files[0],
-    });
+    const file = e.target.files[0];
+    if (!file) {
+      setFormData({ ...formData, image: null });
+      return;
+    }
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setFormData({ ...formData, image: reader.result });
+    };
+    reader.readAsDataURL(file);
     setError("");
     setSuccess("");
   };
@@ -68,13 +74,13 @@ const PatientDashboard = () => {
     setSuccess("");
 
     try {
-      const submitData = new FormData();
-      submitData.append("name", formData.name);
-      submitData.append("patientId", formData.patientId);
-      submitData.append("email", formData.email);
-      submitData.append("note", formData.note);
-      submitData.append("image", formData.image);
-
+      const submitData = {
+        name: formData.name,
+        patientId: formData.patientId,
+        email: formData.email,
+        note: formData.note,
+        imageBase64: formData.image,
+      };
       await createSubmission(submitData);
       setSuccess("Image uploaded successfully!");
       setFormData({
@@ -85,7 +91,6 @@ const PatientDashboard = () => {
       // Reset file input
       const fileInput = document.getElementById("image");
       if (fileInput) fileInput.value = "";
-
       // Reload submissions
       loadSubmissions();
     } catch (error) {

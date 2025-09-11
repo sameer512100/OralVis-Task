@@ -1,11 +1,7 @@
 import apiClient from "./client";
 
 export const createSubmission = async (formData) => {
-  const response = await apiClient.post("/submissions", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
+  const response = await apiClient.post("/submissions", formData);
   return response.data;
 };
 

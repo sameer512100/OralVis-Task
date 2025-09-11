@@ -1,5 +1,6 @@
 import Submission from "../models/submissionModel.js";
 import AWS from "aws-sdk";
+import { v4 as uuidv4 } from "uuid";
 import { createCanvas, loadImage } from "canvas";
 import fs from "fs";
 import path from "path";
@@ -43,8 +44,26 @@ export const getGeneratedImage = async (req, res) => {
 };
 
 export const createSubmission = async (req, res) => {
-  const { name, patientId, email, note } = req.body;
-  const imageUrl = req.file ? `/uploads/${req.file.filename}` : "";
+  const { name, patientId, email, note, imageBase64 } = req.body;
+  let imageUrl = "";
+  if (imageBase64) {
+    const filename = `original_${uuidv4()}.png`;
+    const base64Data = imageBase64.replace(/^data:image\/png;base64,/, "");
+    const buffer = Buffer.from(base64Data, "base64");
+    try {
+      const s3Result = await s3.upload({
+        Bucket: S3_BUCKET,
+        Key: filename,
+        Body: buffer,
+        ContentEncoding: "base64",
+        ContentType: "image/png",
+        ACL: "public-read"
+      }).promise();
+      imageUrl = s3Result.Location;
+    } catch (err) {
+      return res.status(500).json({ message: "Failed to upload image to S3", error: err.message });
+    }
+  }
   try {
     const submission = await Submission.create({
       patient: req.user._id,
@@ -121,9 +140,7 @@ export const generatePDF = async (req, res) => {
 
   try {
   const annotatedImageUrl = submission.annotatedImageUrl || "";
-    const imageUrl = submission.imageUrl
-    ? `https://oralvis-backend-dxgf.onrender.com${submission.imageUrl}`
-      : "";
+  const imageUrl = submission.imageUrl || "";
 
     const data = {
       name: submission.name,
@@ -158,15 +175,30 @@ export const generatePDF = async (req, res) => {
 
     await browser.close();
 
-    // Stream PDF directly to client
-    res.set({
-      'Content-Type': 'application/pdf',
-      'Content-Disposition': `attachment; filename="report_${submission._id}.pdf"`
-    });
-    res.send(pdfBuffer);
-    // Optionally, update status in DB (but no pdfUrl)
+    // Upload PDF to S3
+    const pdfFilename = `report_${submission._id}_${Date.now()}.pdf`;
+    let pdfUrl = "";
+    try {
+      const s3Result = await s3.upload({
+        Bucket: S3_BUCKET,
+        Key: pdfFilename,
+        Body: pdfBuffer,
+        ContentType: "application/pdf",
+        ACL: "public-read"
+      }).promise();
+      pdfUrl = s3Result.Location;
+    } catch (err) {
+      console.error("PDF S3 upload error:", err);
+      return res.status(500).json({ message: "Failed to upload PDF to S3", error: err.message });
+    }
+
+    // Update submission with PDF URL and status
     submission.status = "reported";
+    submission.pdfUrl = pdfUrl;
     await submission.save();
+
+    // Return PDF URL in response
+    res.json({ pdfUrl });
   } catch (error) {
     console.error("PDF generation error:", error);
     res.status(500).json({ message: "PDF generation failed." });

@@ -13,15 +13,6 @@ import {
 import { protect } from "../middleware/auth.js";
 import { requireRole } from "../middleware/roles.js";
 
-// Multer storage with extension preservation
-const storage = multer.diskStorage({
-  destination: "uploads/",
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `${Date.now()}${ext}`);
-  },
-});
-const upload = multer({ storage });
 
 const router = express.Router();
 
@@ -30,7 +21,6 @@ router.post(
   "/",
   protect,
   requireRole("patient"),
-  upload.single("image"),
   createSubmission
 );
 router.get("/mine", protect, requireRole("patient"), getMySubmissions);
