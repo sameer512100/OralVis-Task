@@ -5,9 +5,9 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon server.js",
-    "start": "node server.js",
-    "postinstall": "puppeteer install"
+    "dev": "nodemon server.js",          
+    "start": "node server.js",           
+    "postinstall": "puppeteer install"   
   },
   "keywords": [],
   "author": "",
@@ -27,6 +27,9 @@
     "pdfkit": "^0.17.2",
     "puppeteer": "^24.20.0",
     "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7"
   },
   "engines": {
     "node": ">=18.x"

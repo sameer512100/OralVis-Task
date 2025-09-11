@@ -6,6 +6,9 @@ import path from "path";
 import puppeteer from "puppeteer"; // ✅ use full puppeteer, not puppeteer-core
 import ejs from "ejs";
 import { v4 as uuidv4 } from "uuid";
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Configure AWS S3
 const s3 = new AWS.S3({
@@ -157,39 +160,48 @@ export const generatePDF = async (req, res) => {
       annotationJson: submission.annotationJson,
     };
 
-    const templatePath = path.join(
-      process.cwd(),
-      "templates",
-      "reportTemplate.ejs"
-    );
-    const htmlContent = await renderTemplate(templatePath, data);
+    // Use robust template path
+    const templatePath = path.join(__dirname, "../templates/reportTemplate.ejs");
+    let htmlContent;
+    try {
+      htmlContent = await renderTemplate(templatePath, data);
+    } catch (err) {
+      console.error("EJS template rendering error:", err);
+      return res.status(500).json({ message: "Template rendering failed", error: err.message });
+    }
 
-    // ✅ Render-compatible Puppeteer launch
-    // ✅ Render-compatible Puppeteer launch
-    const browser = await puppeteer.launch({
-      headless: "new",
-      args: [
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage",
-        "--disable-accelerated-2d-canvas",
-        "--no-first-run",
-        "--no-zygote",
-        "--single-process",
-        "--disable-gpu",
-      ],
-      executablePath: puppeteer.executablePath(), // ✅ no await, no env var needed
-    });
+    let browser;
+    try {
+      browser = await puppeteer.launch({
+        headless: "new",
+        args: [
+          "--no-sandbox",
+          "--disable-setuid-sandbox",
+          "--disable-dev-shm-usage",
+          "--disable-accelerated-2d-canvas",
+          "--no-first-run",
+          "--no-zygote",
+          "--single-process",
+          "--disable-gpu",
+        ],
+        executablePath: puppeteer.executablePath(),
+      });
+    } catch (err) {
+      console.error("Puppeteer launch error:", err);
+      return res.status(500).json({ message: "Puppeteer launch failed", error: err.message });
+    }
 
-    const page = await browser.newPage();
-    await page.setContent(htmlContent, { waitUntil: "networkidle0" });
-
-    const pdfBuffer = await page.pdf({
-      format: "A4",
-      printBackground: true,
-    });
-
-    await browser.close();
+    let pdfBuffer;
+    try {
+      const page = await browser.newPage();
+      await page.setContent(htmlContent, { waitUntil: "networkidle0" });
+      pdfBuffer = await page.pdf({ format: "A4", printBackground: true });
+      await browser.close();
+    } catch (err) {
+      if (browser) await browser.close();
+      console.error("PDF generation error:", err);
+      return res.status(500).json({ message: "PDF generation failed", error: err.message });
+    }
 
     // Upload PDF to S3
     const pdfFilename = `report_${submission._id}_${Date.now()}.pdf`;
@@ -206,10 +218,7 @@ export const generatePDF = async (req, res) => {
       pdfUrl = s3Result.Location;
     } catch (err) {
       console.error("PDF S3 upload error:", err);
-      return res.status(500).json({
-        message: "Failed to upload PDF to S3",
-        error: err.message,
-      });
+      return res.status(500).json({ message: "Failed to upload PDF to S3", error: err.message });
     }
 
     // Update submission with PDF URL and status
@@ -220,16 +229,7 @@ export const generatePDF = async (req, res) => {
     // Return PDF URL in response
     res.json({ pdfUrl });
   } catch (error) {
-    console.error("PDF generation error:", error);
-    if (error.stack) {
-      console.error("Stack trace:", error.stack);
-    }
-    if (error.message) {
-      console.error("Error message:", error.message);
-    }
-    res.status(500).json({
-      message: "PDF generation failed.",
-      error: error.message || error,
-    });
+    console.error("PDF generation controller error:", error);
+    res.status(500).json({ message: "PDF generation failed.", error: error.message || error });
   }
 };
