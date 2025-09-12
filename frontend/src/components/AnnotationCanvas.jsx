@@ -18,6 +18,98 @@ import {
   FileText,
 } from "lucide-react";
 
+// Annotation tool definitions with colors and labels
+const TOOL_DEFS = [
+  {
+    id: "select",
+    icon: Move,
+    label: "Select",
+    color: "text-gray-600",
+    swatch: "#6B7280",
+  },
+  {
+    id: "rectangle",
+    icon: Square,
+    label: "Inflammed / Red gums",
+    color: "text-purple-900",
+    swatch: "#4B2245",
+  },
+  {
+    id: "malaligned",
+    icon: Square,
+    label: "Malaligned",
+    color: "text-yellow-400",
+    swatch: "#FDE047",
+  },
+  {
+    id: "receded",
+    icon: Square,
+    label: "Receded gums",
+    color: "text-gray-500",
+    swatch: "#8B6F7A",
+  },
+  {
+    id: "stains",
+    icon: Pen,
+    label: "Stains",
+    color: "text-red-700",
+    swatch: "#B91C1C",
+  },
+  {
+    id: "attrition",
+    icon: Pen,
+    label: "Attrition",
+    color: "text-cyan-400",
+    swatch: "#06B6D4",
+  },
+  {
+    id: "crowns",
+    icon: Square,
+    label: "Crowns",
+    color: "text-pink-600",
+    swatch: "#EC4899",
+  },
+  {
+    id: "arrow",
+    icon: ArrowRight,
+    label: "Arrow",
+    color: "text-yellow-600",
+    swatch: "#F59E0B",
+  },
+];
+
+const TOOL_ANNOTATION_MAP = {
+  rectangle: {
+    stroke: "#4B2245", // Inflammed / Red gums
+    strokeWidth: 2,
+  },
+  malaligned: {
+    stroke: "#FDE047", // Malaligned
+    strokeWidth: 2,
+  },
+  receded: {
+    stroke: "#8B6F7A", // Receded gums
+    strokeWidth: 2,
+  },
+  stains: {
+    stroke: "#B91C1C", // Stains
+    strokeWidth: 2,
+  },
+  attrition: {
+    stroke: "#06B6D4", // Attrition
+    strokeWidth: 2,
+  },
+  crowns: {
+    stroke: "#EC4899", // Crowns
+    strokeWidth: 2,
+  },
+  arrow: {
+    stroke: "#F59E0B", // Arrow
+    strokeWidth: 2,
+    fill: "#F59E0B",
+  },
+};
+
 const AnnotationCanvas = ({
   imageUrl,
   annotationJson,
@@ -31,6 +123,7 @@ const AnnotationCanvas = ({
   const [annotations, setAnnotations] = useState([]);
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentAnnotation, setCurrentAnnotation] = useState(null);
+  const [hasChanges, setHasChanges] = useState(false);
   const stageRef = useRef();
 
   // Load image
@@ -52,8 +145,10 @@ const AnnotationCanvas = ({
     } else {
       setAnnotations([]);
     }
+    setHasChanges(false); // Reset changes when loading new annotationJson
   }, [annotationJson, imageUrl]);
 
+  // Mark changes when drawing
   const handleMouseDown = (e) => {
     if (tool === "select") return;
 
@@ -63,6 +158,9 @@ const AnnotationCanvas = ({
     let newAnnotation;
     switch (tool) {
       case "rectangle":
+      case "malaligned":
+      case "receded":
+      case "crowns":
         newAnnotation = {
           id,
           type: "rectangle",
@@ -70,8 +168,8 @@ const AnnotationCanvas = ({
           y: pos.y,
           width: 0,
           height: 0,
-          stroke: "#3B82F6",
-          strokeWidth: 2,
+          ...TOOL_ANNOTATION_MAP[tool],
+          label: TOOL_DEFS.find((t) => t.id === tool)?.label,
         };
         break;
       case "circle":
@@ -90,18 +188,18 @@ const AnnotationCanvas = ({
           id,
           type: "arrow",
           points: [pos.x, pos.y, pos.x, pos.y],
-          stroke: "#F59E0B",
-          strokeWidth: 2,
-          fill: "#F59E0B",
+          ...TOOL_ANNOTATION_MAP.arrow,
+          label: TOOL_DEFS.find((t) => t.id === tool)?.label,
         };
         break;
-      case "pen":
+      case "stains":
+      case "attrition":
         newAnnotation = {
           id,
           type: "line",
           points: [pos.x, pos.y],
-          stroke: "#EF4444",
-          strokeWidth: 2,
+          ...TOOL_ANNOTATION_MAP[tool],
+          label: TOOL_DEFS.find((t) => t.id === tool)?.label,
         };
         break;
       default:
@@ -122,6 +220,9 @@ const AnnotationCanvas = ({
 
     switch (tool) {
       case "rectangle":
+      case "malaligned":
+      case "receded":
+      case "crowns":
         updatedAnnotation.width = point.x - currentAnnotation.x;
         updatedAnnotation.height = point.y - currentAnnotation.y;
         break;
@@ -140,7 +241,8 @@ const AnnotationCanvas = ({
           point.y,
         ];
         break;
-      case "pen":
+      case "stains":
+      case "attrition":
         updatedAnnotation.points = updatedAnnotation.points.concat([
           point.x,
           point.y,
@@ -157,16 +259,23 @@ const AnnotationCanvas = ({
     setAnnotations((prev) => [...prev, currentAnnotation]);
     setCurrentAnnotation(null);
     setIsDrawing(false);
+    setHasChanges(true); // Mark as changed
   };
 
+  // Clear all annotations
+  const handleClear = () => {
+    setAnnotations([]);
+    setCurrentAnnotation(null);
+    setIsDrawing(false);
+    setHasChanges(true); // Mark as changed
+  };
+
+  // Save only if there are changes
   const handleSave = async () => {
-  if (!stageRef.current) return;
-
-  // Get the canvas as base64
-  const dataURL = stageRef.current.toDataURL();
-
-  // Only pass annotations; let parent handle base64 image
-  await onSave({ annotations }, dataURL);
+    if (!stageRef.current || !hasChanges) return;
+    const dataURL = stageRef.current.toDataURL();
+    await onSave({ annotations }, dataURL);
+    setHasChanges(false); // Reset after save
   };
 
   const renderAnnotation = (annotation) => {
@@ -225,30 +334,42 @@ const AnnotationCanvas = ({
     }
   };
 
-  const tools = [
-    { id: "select", icon: Move, label: "Select", color: "text-gray-600" },
-    {
-      id: "rectangle",
-      icon: Square,
-      label: "Rectangle",
-      color: "text-blue-600",
-    },
-    {
-      id: "circle",
-      icon: CircleIcon,
-      label: "Circle",
-      color: "text-green-600",
-    },
-    { id: "arrow", icon: ArrowRight, label: "Arrow", color: "text-yellow-600" },
-    { id: "pen", icon: Pen, label: "Pen", color: "text-red-600" },
-  ];
-
   return (
     <div className="space-y-4">
+      {/* Annotation Legend */}
+      <div className="flex flex-wrap gap-6 items-center bg-gray-50 px-4 py-2 rounded">
+        {TOOL_DEFS.filter(
+          (t) => t.id !== "select" && t.id !== "arrow" && t.id !== "circle"
+        ).map((tool) => (
+          <div key={tool.id} className="flex items-center gap-2">
+            <span
+              className="inline-block w-4 h-4 rounded"
+              style={{ backgroundColor: tool.swatch }}
+            ></span>
+            <span className="text-sm text-gray-700">{tool.label}</span>
+          </div>
+        ))}
+        {/* Add Arrow and Circle to legend */}
+        <div className="flex items-center gap-2">
+          <span
+            className="inline-block w-4 h-4 rounded"
+            style={{ backgroundColor: "#F59E0B" }}
+          ></span>
+          <span className="text-sm text-gray-700">Arrow</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span
+            className="inline-block w-4 h-4 rounded"
+            style={{ backgroundColor: "#10B981" }}
+          ></span>
+          <span className="text-sm text-gray-700">Circle</span>
+        </div>
+      </div>
+
       {/* Toolbar */}
       <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow">
         <div className="flex items-center space-x-2">
-          {tools.map((t) => {
+          {TOOL_DEFS.map((t) => {
             const Icon = t.icon;
             return (
               <button
@@ -261,7 +382,7 @@ const AnnotationCanvas = ({
                 }`}
                 title={t.label}
               >
-                <Icon className={`h-4 w-4 mr-1 ${t.color}`} />
+                <Icon className={`h-4 w-4 mr-1`} style={{ color: t.swatch }} />
                 {t.label}
               </button>
             );
@@ -270,11 +391,7 @@ const AnnotationCanvas = ({
 
         <div className="flex items-center space-x-3">
           <button
-            onClick={() => {
-              setAnnotations([]);
-              setCurrentAnnotation(null);
-              setIsDrawing(false);
-            }}
+            onClick={handleClear}
             className="px-3 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
           >
             Clear All
@@ -282,7 +399,7 @@ const AnnotationCanvas = ({
 
           <button
             onClick={handleSave}
-            disabled={saving || annotations.length === 0}
+            disabled={saving || !hasChanges}
             className="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {saving ? (

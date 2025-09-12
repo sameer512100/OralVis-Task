@@ -330,6 +330,20 @@ const AnnotationPage = () => {
           </ul>
         </div>
 
+        {/* Image Comparison Section */}
+        <div className="bg-white shadow rounded-lg mb-6 p-6">
+          <h2 className="text-lg font-medium text-gray-900 mb-2">
+            Original Image
+          </h2>
+          <div className="flex justify-center">
+            <img
+              src={submission.imageUrl}
+              alt="Original"
+              className="max-w-full max-h-[400px] rounded shadow"
+            />
+          </div>
+        </div>
+
         {/* Annotation Canvas */}
         <AnnotationCanvas
           ref={stageRef}
