@@ -3,7 +3,7 @@ import AWS from "aws-sdk";
 import { createCanvas, loadImage } from "canvas";
 import fs from "fs";
 import path from "path";
-import puppeteer from "puppeteer"; // ✅ use full puppeteer, not puppeteer-core
+import puppeteer from "puppeteer"; 
 import ejs from "ejs";
 import { v4 as uuidv4 } from "uuid";
 import { fileURLToPath } from 'url';
@@ -160,20 +160,26 @@ export const generatePDF = async (req, res) => {
       annotationJson: submission.annotationJson,
     };
 
-    // Use robust template path
-    const templatePath = path.join(__dirname, "../templates/reportTemplate.ejs");
+    // Robust template path
+    const templatePath = path.join(
+      __dirname,
+      "../templates/reportTemplate.ejs"
+    );
     let htmlContent;
     try {
       htmlContent = await renderTemplate(templatePath, data);
     } catch (err) {
       console.error("EJS template rendering error:", err);
-      return res.status(500).json({ message: "Template rendering failed", error: err.message });
+      return res
+        .status(500)
+        .json({ message: "Template rendering failed", error: err.message });
     }
 
     let browser;
     try {
       browser = await puppeteer.launch({
         headless: "new",
+        executablePath: puppeteer.executablePath(), // Ensures Chrome/Chromium is found
         args: [
           "--no-sandbox",
           "--disable-setuid-sandbox",
@@ -187,7 +193,9 @@ export const generatePDF = async (req, res) => {
       });
     } catch (err) {
       console.error("Puppeteer launch error:", err);
-      return res.status(500).json({ message: "Puppeteer launch failed", error: err.message });
+      return res
+        .status(500)
+        .json({ message: "Puppeteer launch failed", error: err.message });
     }
 
     let pdfBuffer;
@@ -199,7 +207,9 @@ export const generatePDF = async (req, res) => {
     } catch (err) {
       if (browser) await browser.close();
       console.error("PDF generation error:", err);
-      return res.status(500).json({ message: "PDF generation failed", error: err.message });
+      return res
+        .status(500)
+        .json({ message: "PDF generation failed", error: err.message });
     }
 
     // Upload PDF to S3
@@ -217,7 +227,9 @@ export const generatePDF = async (req, res) => {
       pdfUrl = s3Result.Location;
     } catch (err) {
       console.error("PDF S3 upload error:", err);
-      return res.status(500).json({ message: "Failed to upload PDF to S3", error: err.message });
+      return res
+        .status(500)
+        .json({ message: "Failed to upload PDF to S3", error: err.message });
     }
 
     // Update submission with PDF URL and status
@@ -229,6 +241,12 @@ export const generatePDF = async (req, res) => {
     res.json({ pdfUrl });
   } catch (error) {
     console.error("PDF generation controller error:", error);
-    res.status(500).json({ message: "PDF generation failed.", error: error.message || error });
+    res
+      .status(500)
+      .json({
+        message: "PDF generation failed.",
+        error: error.message || error,
+      });
   }
 };
+

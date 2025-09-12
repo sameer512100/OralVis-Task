@@ -7,8 +7,7 @@
   "scripts": {
     "dev": "nodemon server.js",
     "start": "node server.js",
-    "postinstall": "puppeteer install",
-    "prepare": "npx puppeteer browsers install chrome"
+    "postinstall": "echo 'Puppeteer installed via full package' "
   },
   "keywords": [],
   "author": "",
