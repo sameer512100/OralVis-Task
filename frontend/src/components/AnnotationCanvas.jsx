@@ -6,13 +6,11 @@ import {
   Rect,
   Circle,
   Arrow,
-  Line,
 } from "react-konva";
 import {
   Square,
   Circle as CircleIcon,
   ArrowRight,
-  Pen,
   Move,
   Save,
   FileText,
@@ -50,14 +48,14 @@ const TOOL_DEFS = [
   },
   {
     id: "stains",
-    icon: Pen,
+    icon: CircleIcon,
     label: "Stains",
     color: "text-red-700",
     swatch: "#B91C1C",
   },
   {
     id: "attrition",
-    icon: Pen,
+    icon: CircleIcon,
     label: "Attrition",
     color: "text-cyan-400",
     swatch: "#06B6D4",
@@ -75,6 +73,13 @@ const TOOL_DEFS = [
     label: "Arrow",
     color: "text-yellow-600",
     swatch: "#F59E0B",
+  },
+  {
+    id: "circle",
+    icon: CircleIcon,
+    label: "Circle",
+    color: "text-green-600",
+    swatch: "#10B981",
   },
 ];
 
@@ -107,6 +112,10 @@ const TOOL_ANNOTATION_MAP = {
     stroke: "#F59E0B", // Arrow
     strokeWidth: 2,
     fill: "#F59E0B",
+  },
+  circle: {
+    stroke: "#10B981", // Circle
+    strokeWidth: 2,
   },
 };
 
@@ -172,6 +181,8 @@ const AnnotationCanvas = ({
           label: TOOL_DEFS.find((t) => t.id === tool)?.label,
         };
         break;
+      case "stains":
+      case "attrition":
       case "circle":
         newAnnotation = {
           id,
@@ -179,8 +190,8 @@ const AnnotationCanvas = ({
           x: pos.x,
           y: pos.y,
           radius: 0,
-          stroke: "#10B981",
-          strokeWidth: 2,
+          ...TOOL_ANNOTATION_MAP[tool],
+          label: TOOL_DEFS.find((t) => t.id === tool)?.label,
         };
         break;
       case "arrow":
@@ -189,16 +200,6 @@ const AnnotationCanvas = ({
           type: "arrow",
           points: [pos.x, pos.y, pos.x, pos.y],
           ...TOOL_ANNOTATION_MAP.arrow,
-          label: TOOL_DEFS.find((t) => t.id === tool)?.label,
-        };
-        break;
-      case "stains":
-      case "attrition":
-        newAnnotation = {
-          id,
-          type: "line",
-          points: [pos.x, pos.y],
-          ...TOOL_ANNOTATION_MAP[tool],
           label: TOOL_DEFS.find((t) => t.id === tool)?.label,
         };
         break;
@@ -226,6 +227,8 @@ const AnnotationCanvas = ({
         updatedAnnotation.width = point.x - currentAnnotation.x;
         updatedAnnotation.height = point.y - currentAnnotation.y;
         break;
+      case "stains":
+      case "attrition":
       case "circle":
         const radius = Math.sqrt(
           Math.pow(point.x - currentAnnotation.x, 2) +
@@ -235,18 +238,11 @@ const AnnotationCanvas = ({
         break;
       case "arrow":
         updatedAnnotation.points = [
-          currentAnnotation.x,
-          currentAnnotation.y,
+          currentAnnotation.points[0],
+          currentAnnotation.points[1],
           point.x,
           point.y,
         ];
-        break;
-      case "stains":
-      case "attrition":
-        updatedAnnotation.points = updatedAnnotation.points.concat([
-          point.x,
-          point.y,
-        ]);
         break;
     }
 
@@ -317,18 +313,6 @@ const AnnotationCanvas = ({
             pointerWidth={10}
           />
         );
-      case "line":
-        return (
-          <Line
-            key={annotation.id}
-            points={annotation.points}
-            stroke={annotation.stroke}
-            strokeWidth={annotation.strokeWidth}
-            tension={0.5}
-            lineCap="round"
-            lineJoin="round"
-          />
-        );
       default:
         return null;
     }
@@ -336,36 +320,6 @@ const AnnotationCanvas = ({
 
   return (
     <div className="space-y-4">
-      {/* Annotation Legend */}
-      <div className="flex flex-wrap gap-6 items-center bg-gray-50 px-4 py-2 rounded">
-        {TOOL_DEFS.filter(
-          (t) => t.id !== "select" && t.id !== "arrow" && t.id !== "circle"
-        ).map((tool) => (
-          <div key={tool.id} className="flex items-center gap-2">
-            <span
-              className="inline-block w-4 h-4 rounded"
-              style={{ backgroundColor: tool.swatch }}
-            ></span>
-            <span className="text-sm text-gray-700">{tool.label}</span>
-          </div>
-        ))}
-        {/* Add Arrow and Circle to legend */}
-        <div className="flex items-center gap-2">
-          <span
-            className="inline-block w-4 h-4 rounded"
-            style={{ backgroundColor: "#F59E0B" }}
-          ></span>
-          <span className="text-sm text-gray-700">Arrow</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span
-            className="inline-block w-4 h-4 rounded"
-            style={{ backgroundColor: "#10B981" }}
-          ></span>
-          <span className="text-sm text-gray-700">Circle</span>
-        </div>
-      </div>
-
       {/* Toolbar */}
       <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow">
         <div className="flex items-center space-x-2">

@@ -114,35 +114,40 @@ const AnnotationPage = () => {
     setRecommendations((prev) => prev.filter((_, i) => i !== idx));
   };
 
-  const handleGeneratePDF = async () => {
-    setGenerating(true);
-    setError("");
-    setSuccess("");
+ const handleGeneratePDF = async () => {
+   setGenerating(true);
+   setError("");
+   setSuccess("");
 
-    try {
-      // Make the POST request to generate the PDF, including Authorization header
-      const response = await fetch(`${API_BASE_URL}/submissions/${id}/generate-pdf`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { "Authorization": `Bearer ${token}` } : {}),
-        },
-      });
+   try {
+     // Send recommendations in the POST body
+     const response = await fetch(
+       `${API_BASE_URL}/submissions/${id}/generate-pdf`,
+       {
+         method: "POST",
+         credentials: "include",
+         headers: {
+           "Content-Type": "application/json",
+           ...(token ? { Authorization: `Bearer ${token}` } : {}),
+         },
+         body: JSON.stringify({
+           recommendations: recommendations,
+         }),
+       }
+     );
 
-      if (!response.ok) {
-        throw new Error("Failed to generate PDF");
-      }
+     if (!response.ok) {
+       throw new Error("Failed to generate PDF");
+     }
 
-      // After successful generation, reload submission to get the new pdfUrl
-      setSuccess("PDF generated successfully!");
-      await loadSubmission();
-    } catch (error) {
-      setError(error.message || "Failed to generate PDF");
-    } finally {
-      setGenerating(false);
-    }
-  };
+     setSuccess("PDF generated successfully!");
+     await loadSubmission();
+   } catch (error) {
+     setError(error.message || "Failed to generate PDF");
+   } finally {
+     setGenerating(false);
+   }
+ };
 
   if (loading) {
     return (
