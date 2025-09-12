@@ -181,5 +181,11 @@ Pull requests are welcome. For major changes, open an issue first to discuss wha
 
 ---
 
+## DEMO CREDENTIALS
+patient : test@gmail.com
+admin : admin@gmail.com
+
+password ( patient && admin ) : test1234
+
 ## License
 MIT
