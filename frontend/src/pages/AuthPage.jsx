@@ -66,13 +66,13 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-blue-200 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 space-y-8">
         <div>
           <div className="flex justify-center">
-            <Shield className="h-12 w-12 text-blue-600" />
+            <Shield className="h-14 w-14 text-blue-600 drop-shadow-lg" />
           </div>
-          <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 tracking-tight">
             {isLogin
               ? "Sign in to your account"
               : `Create your ${signupRole} account`}
@@ -83,13 +83,13 @@ const AuthPage = () => {
           <div className="space-y-4">
             {!isLogin && (
               <>
-                <div className="flex justify-center gap-4 mb-4">
+                <div className="flex justify-center gap-4 mb-6">
                   <button
                     type="button"
-                    className={`px-4 py-2 rounded ${
+                    className={`px-4 py-2 rounded-lg transition-all duration-200 shadow-sm border ${
                       signupRole === "patient"
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-200"
+                        ? "bg-blue-600 text-white border-blue-600 scale-105"
+                        : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-blue-50"
                     }`}
                     onClick={() => setSignupRole("patient")}
                   >
@@ -97,16 +97,17 @@ const AuthPage = () => {
                   </button>
                   <button
                     type="button"
-                    className={`px-4 py-2 rounded ${
+                    className={`px-4 py-2 rounded-lg transition-all duration-200 shadow-sm border ${
                       signupRole === "admin"
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-200"
+                        ? "bg-blue-600 text-white border-blue-600 scale-105"
+                        : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-blue-50"
                     }`}
                     onClick={() => setSignupRole("admin")}
                   >
                     Admin
                   </button>
                 </div>
+                <hr className="mb-4" />
 
                 <div>
                   <label
@@ -122,7 +123,7 @@ const AuthPage = () => {
                       name="name"
                       type="text"
                       required={!isLogin}
-                      className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      className="pl-10 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                       placeholder="Enter your full name"
                       value={formData.name}
                       onChange={handleInputChange}
@@ -145,7 +146,7 @@ const AuthPage = () => {
                         name="patientId"
                         type="text"
                         required={!isLogin}
-                        className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        className="pl-10 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                         placeholder="Enter patient ID"
                         value={formData.patientId}
                         onChange={handleInputChange}
@@ -171,7 +172,7 @@ const AuthPage = () => {
                   type="email"
                   autoComplete="email"
                   required
-                  className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className="pl-10 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   placeholder="Enter your email"
                   value={formData.email}
                   onChange={handleInputChange}
@@ -194,19 +195,18 @@ const AuthPage = () => {
                   type={showPassword ? "text" : "password"}
                   autoComplete={isLogin ? "current-password" : "new-password"}
                   required
-                  className="pl-10 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 pr-10"
+                  className="pl-10 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 pr-10"
                   placeholder="Enter your password"
                   value={formData.password}
                   onChange={handleInputChange}
                 />
                 <button
                   type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-blue-600 transition"
                   onClick={() => setShowPassword((prev) => !prev)}
                   tabIndex={-1}
                 >
                   {showPassword ? (
-                    // Eye open SVG
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-5 w-5"
@@ -228,7 +228,6 @@ const AuthPage = () => {
                       />
                     </svg>
                   ) : (
-                    // Eye closed SVG
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-5 w-5"
@@ -250,8 +249,8 @@ const AuthPage = () => {
           </div>
 
           {error && (
-            <div className="rounded-md bg-red-50 p-4">
-              <p className="text-sm text-red-700">{error}</p>
+            <div className="rounded-md bg-red-100 border border-red-300 p-4 shadow-sm">
+              <p className="text-sm text-red-700 font-semibold">{error}</p>
             </div>
           )}
 
@@ -259,10 +258,13 @@ const AuthPage = () => {
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-semibold rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
             >
               {loading ? (
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                <span className="flex items-center gap-2">
+                  <span className="animate-spin rounded-full h-5 w-5 border-2 border-t-2 border-white border-t-blue-400"></span>
+                  <span>Loading...</span>
+                </span>
               ) : isLogin ? (
                 "Sign In"
               ) : (
@@ -273,11 +275,11 @@ const AuthPage = () => {
             </button>
           </div>
 
-          <div className="text-center">
+          <div className="text-center mt-2">
             <button
               type="button"
               onClick={() => setIsLogin(!isLogin)}
-              className="text-sm text-blue-600 hover:text-blue-500"
+              className="text-sm text-blue-600 hover:text-blue-500 underline transition"
             >
               {isLogin
                 ? "Don't have an account? Sign up"
@@ -288,6 +290,5 @@ const AuthPage = () => {
       </div>
     </div>
   );
-};
-
+}
 export default AuthPage;

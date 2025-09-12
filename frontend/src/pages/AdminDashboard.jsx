@@ -92,7 +92,7 @@ const AdminDashboard = () => {
 
         {/* Statistics Cards */}
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-          <div className="bg-white overflow-hidden shadow rounded-lg">
+          <div className="bg-white overflow-hidden shadow-lg rounded-lg">
             <div className="p-5">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
@@ -190,98 +190,107 @@ const AdminDashboard = () => {
                 </div>
               </div>
             ) : submissions.length === 0 ? (
-              <div className="p-6 text-center">
-                <p className="text-gray-500">No submissions found</p>
+              <div className="p-6 text-center text-gray-500 flex flex-col items-center">
+                <FileText className="h-10 w-10 mb-2 text-gray-300" />
+                <p>No submissions found</p>
               </div>
             ) : (
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Image
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Patient Info
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Submission Date
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Note
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {submissions.map((submission) => (
-                    <tr key={submission._id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <img
-                          src={getAbsoluteUrl(
-                            submission.annotatedImageUrl || submission.imageUrl
-                          )}
-                          alt="Submission"
-                          className="h-16 w-16 object-cover rounded shadow"
-                        />
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
-                          {submission.name}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          ID: {submission.patientId}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {submission.email}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {new Date(submission.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          {getStatusIcon(submission.status)}
-                          <span
-                            className={`ml-2 px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(
-                              submission.status
-                            )}`}
-                          >
-                            {submission.status}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
-                        {submission.note || "-"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex flex-col gap-2">
-                        <Link
-                          to={`/admin/submission/${submission._id}`}
-                          className="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors mb-1"
-                        >
-                          <Eye className="h-4 w-4 mr-1" />
-                          Annotate / View
-                        </Link>
-                        {submission.pdfUrl && (
-                          <a
-                            href={getAbsoluteUrl(submission.pdfUrl)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors"
-                          >
-                            <Download className="h-4 w-4 mr-2" />
-                            Download PDF
-                          </a>
-                        )}
-                      </td>
+              <div className="overflow-x-auto rounded-b-lg">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Image
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Patient Info
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Submission Date
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Note
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {submissions.map((submission) => (
+                      <tr
+                        key={submission._id}
+                        className="hover:bg-blue-50 transition-colors duration-150"
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <img
+                            src={getAbsoluteUrl(
+                              submission.annotatedImageUrl ||
+                                submission.imageUrl
+                            )}
+                            alt="Submission"
+                            className="h-16 w-16 object-cover rounded shadow"
+                          />
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">
+                            {submission.name}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            ID: {submission.patientId}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {submission.email}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {new Date(submission.createdAt).toLocaleString()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            {getStatusIcon(submission.status)}
+                            <span
+                              className={`ml-2 px-2 py-1 text-xs font-semibold rounded-full shadow ${getStatusColor(
+                                submission.status
+                              )}`}
+                            >
+                              {submission.status.charAt(0).toUpperCase() +
+                                submission.status.slice(1)}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
+                          {submission.note || "-"}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex flex-col gap-2">
+                          <Link
+                            to={`/admin/submission/${submission._id}`}
+                            title="View or annotate this submission"
+                            className="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors mb-1"
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            Annotate / View
+                          </Link>
+                          {submission.pdfUrl && (
+                            <a
+                              href={getAbsoluteUrl(submission.pdfUrl)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors"
+                            >
+                              <Download className="h-4 w-4 mr-2" />
+                              Download PDF
+                            </a>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         </div>
