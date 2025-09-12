@@ -41,6 +41,7 @@ Below are some screenshots demonstrating the application features:
 - [Environment Variables](#environment-variables)
 - [Scripts](#scripts)
 - [Contributing](#contributing)
+- [Demo Credentials]
 - [License](#license)
 
 ---
