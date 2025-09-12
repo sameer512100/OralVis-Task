@@ -6,118 +6,57 @@ import {
   Rect,
   Circle,
   Arrow,
-  Line,
 } from "react-konva";
 import {
   Square,
   Circle as CircleIcon,
   ArrowRight,
-  Pen,
   Move,
   Save,
   FileText,
 } from "lucide-react";
 
-// Annotation tool definitions with colors and labels
+// Only shape-based tools (no pens)
 const TOOL_DEFS = [
   {
     id: "select",
     icon: Move,
     label: "Select",
-    color: "text-gray-600",
     swatch: "#6B7280",
   },
   {
     id: "rectangle",
     icon: Square,
-    label: "Inflammed / Red gums",
-    color: "text-purple-900",
+    label: "Rectangle",
     swatch: "#4B2245",
-  },
-  {
-    id: "malaligned",
-    icon: Square,
-    label: "Malaligned",
-    color: "text-yellow-400",
-    swatch: "#FDE047",
-  },
-  {
-    id: "receded",
-    icon: Square,
-    label: "Receded gums",
-    color: "text-gray-500",
-    swatch: "#8B6F7A",
-  },
-  {
-    id: "stains",
-    icon: Pen,
-    label: "Stains",
-    color: "text-red-700",
-    swatch: "#B91C1C",
-  },
-  {
-    id: "attrition",
-    icon: Pen,
-    label: "Attrition",
-    color: "text-cyan-400",
-    swatch: "#06B6D4",
-  },
-  {
-    id: "crowns",
-    icon: Square,
-    label: "Crowns",
-    color: "text-pink-600",
-    swatch: "#EC4899",
-  },
-  {
-    id: "arrow",
-    icon: ArrowRight,
-    label: "Arrow",
-    color: "text-yellow-600",
-    swatch: "#F59E0B",
   },
   {
     id: "circle",
     icon: CircleIcon,
     label: "Circle",
-    color: "text-green-600",
     swatch: "#10B981",
+  },
+  {
+    id: "arrow",
+    icon: ArrowRight,
+    label: "Arrow",
+    swatch: "#F59E0B",
   },
 ];
 
 const TOOL_ANNOTATION_MAP = {
   rectangle: {
-    stroke: "#4B2245", // Inflammed / Red gums
+    stroke: "#4B2245",
     strokeWidth: 2,
-  },
-  malaligned: {
-    stroke: "#FDE047", // Malaligned
-    strokeWidth: 2,
-  },
-  receded: {
-    stroke: "#8B6F7A", // Receded gums
-    strokeWidth: 2,
-  },
-  stains: {
-    stroke: "#B91C1C", // Stains
-    strokeWidth: 2,
-  },
-  attrition: {
-    stroke: "#06B6D4", // Attrition
-    strokeWidth: 2,
-  },
-  crowns: {
-    stroke: "#EC4899", // Crowns
-    strokeWidth: 2,
-  },
-  arrow: {
-    stroke: "#F59E0B", // Arrow
-    strokeWidth: 2,
-    fill: "#F59E0B",
   },
   circle: {
     stroke: "#10B981",
     strokeWidth: 2,
+  },
+  arrow: {
+    stroke: "#F59E0B",
+    strokeWidth: 2,
+    fill: "#F59E0B",
   },
 };
 
@@ -145,17 +84,17 @@ const AnnotationCanvas = (
     }
   }, [imageUrl]);
 
-  // Load existing annotations when annotationJson changes
+  // Load existing annotations
   useEffect(() => {
     if (annotationJson && Array.isArray(annotationJson.annotations)) {
       setAnnotations(annotationJson.annotations);
     } else {
       setAnnotations([]);
     }
-    setHasChanges(false); // Reset changes when loading new annotationJson
+    setHasChanges(false);
   }, [annotationJson, imageUrl]);
 
-  // Mark changes when drawing
+  // Mouse events
   const handleMouseDown = (e) => {
     if (tool === "select") return;
 
@@ -165,9 +104,6 @@ const AnnotationCanvas = (
     let newAnnotation;
     switch (tool) {
       case "rectangle":
-      case "malaligned":
-      case "receded":
-      case "crowns":
         newAnnotation = {
           id,
           type: "rectangle",
@@ -175,8 +111,7 @@ const AnnotationCanvas = (
           y: pos.y,
           width: 0,
           height: 0,
-          ...TOOL_ANNOTATION_MAP[tool],
-          label: TOOL_DEFS.find((t) => t.id === tool)?.label,
+          ...TOOL_ANNOTATION_MAP.rectangle,
         };
         break;
       case "circle":
@@ -186,8 +121,7 @@ const AnnotationCanvas = (
           x: pos.x,
           y: pos.y,
           radius: 0,
-          stroke: "#10B981",
-          strokeWidth: 2,
+          ...TOOL_ANNOTATION_MAP.circle,
         };
         break;
       case "arrow":
@@ -196,17 +130,6 @@ const AnnotationCanvas = (
           type: "arrow",
           points: [pos.x, pos.y, pos.x, pos.y],
           ...TOOL_ANNOTATION_MAP.arrow,
-          label: TOOL_DEFS.find((t) => t.id === tool)?.label,
-        };
-        break;
-      case "stains":
-      case "attrition":
-        newAnnotation = {
-          id,
-          type: "line",
-          points: [pos.x, pos.y],
-          ...TOOL_ANNOTATION_MAP[tool],
-          label: TOOL_DEFS.find((t) => t.id === tool)?.label,
         };
         break;
       default:
@@ -227,9 +150,6 @@ const AnnotationCanvas = (
 
     switch (tool) {
       case "rectangle":
-      case "malaligned":
-      case "receded":
-      case "crowns":
         updatedAnnotation.width = point.x - currentAnnotation.x;
         updatedAnnotation.height = point.y - currentAnnotation.y;
         break;
@@ -242,18 +162,11 @@ const AnnotationCanvas = (
         break;
       case "arrow":
         updatedAnnotation.points = [
-          currentAnnotation.x,
-          currentAnnotation.y,
+          currentAnnotation.points[0],
+          currentAnnotation.points[1],
           point.x,
           point.y,
         ];
-        break;
-      case "stains":
-      case "attrition":
-        updatedAnnotation.points = updatedAnnotation.points.concat([
-          point.x,
-          point.y,
-        ]);
         break;
     }
 
@@ -266,7 +179,7 @@ const AnnotationCanvas = (
     setAnnotations((prev) => [...prev, currentAnnotation]);
     setCurrentAnnotation(null);
     setIsDrawing(false);
-    setHasChanges(true); // Mark as changed
+    setHasChanges(true);
   };
 
   // Clear all annotations
@@ -274,7 +187,7 @@ const AnnotationCanvas = (
     setAnnotations([]);
     setCurrentAnnotation(null);
     setIsDrawing(false);
-    setHasChanges(true); // Mark as changed
+    setHasChanges(true);
   };
 
   // Save only if there are changes
@@ -282,7 +195,7 @@ const AnnotationCanvas = (
     if (!stageRef.current || !hasChanges) return;
     const dataURL = stageRef.current.toDataURL();
     await onSave({ annotations }, dataURL);
-    setHasChanges(false); // Reset after save
+    setHasChanges(false);
   };
 
   const renderAnnotation = (annotation) => {
@@ -324,18 +237,6 @@ const AnnotationCanvas = (
             pointerWidth={10}
           />
         );
-      case "line":
-        return (
-          <Line
-            key={annotation.id}
-            points={annotation.points}
-            stroke={annotation.stroke}
-            strokeWidth={annotation.strokeWidth}
-            tension={0.5}
-            lineCap="round"
-            lineJoin="round"
-          />
-        );
       default:
         return null;
     }
@@ -343,36 +244,6 @@ const AnnotationCanvas = (
 
   return (
     <div className="space-y-4">
-      {/* Annotation Legend */}
-      <div className="flex flex-wrap gap-6 items-center bg-gray-50 px-4 py-2 rounded">
-        {TOOL_DEFS.filter(
-          (t) => t.id !== "select" && t.id !== "arrow" && t.id !== "circle"
-        ).map((tool) => (
-          <div key={tool.id} className="flex items-center gap-2">
-            <span
-              className="inline-block w-4 h-4 rounded"
-              style={{ backgroundColor: tool.swatch }}
-            ></span>
-            <span className="text-sm text-gray-700">{tool.label}</span>
-          </div>
-        ))}
-        {/* Add Arrow and Circle to legend */}
-        <div className="flex items-center gap-2">
-          <span
-            className="inline-block w-4 h-4 rounded"
-            style={{ backgroundColor: "#F59E0B" }}
-          ></span>
-          <span className="text-sm text-gray-700">Arrow</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span
-            className="inline-block w-4 h-4 rounded"
-            style={{ backgroundColor: "#10B981" }}
-          ></span>
-          <span className="text-sm text-gray-700">Circle</span>
-        </div>
-      </div>
-
       {/* Toolbar */}
       <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow">
         <div className="flex items-center space-x-2">
@@ -389,7 +260,7 @@ const AnnotationCanvas = (
                 }`}
                 title={t.label}
               >
-                <Icon className={`h-4 w-4 mr-1`} style={{ color: t.swatch }} />
+                <Icon className="h-4 w-4 mr-1" style={{ color: t.swatch }} />
                 {t.label}
               </button>
             );
