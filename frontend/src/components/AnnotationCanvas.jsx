@@ -16,47 +16,86 @@ import {
   FileText,
 } from "lucide-react";
 
-// Only shape-based tools (no pens)
+// Tool definitions: shape + color
 const TOOL_DEFS = [
+  {
+    id: "inflamed_gums",
+    icon: Square,
+    label: "Inflamed/Red gums",
+    swatch: "#4B2245", // dark purple
+    shape: "rect",
+  },
+  {
+    id: "malaligned",
+    icon: CircleIcon,
+    label: "Malaligned",
+    swatch: "#FFF700", // yellow
+    shape: "circle",
+  },
+  {
+    id: "receded_gums",
+    icon: Square,
+    label: "Receded gums",
+    swatch: "#A78A8A", // brownish
+    shape: "rect",
+  },
+  {
+    id: "stains",
+    icon: ArrowRight,
+    label: "Stains",
+    swatch: "#FF0000", // red
+    shape: "arrow",
+  },
+  {
+    id: "attrition",
+    icon: ArrowRight,
+    label: "Attrition",
+    swatch: "#00E6FF", // cyan
+    shape: "arrow",
+  },
+  {
+    id: "crowns",
+    icon: CircleIcon,
+    label: "Crowns",
+    swatch: "#C8007A", // magenta
+    shape: "circle",
+  },
   {
     id: "select",
     icon: Move,
     label: "Select",
     swatch: "#6B7280",
-  },
-  {
-    id: "rectangle",
-    icon: Square,
-    label: "Rectangle",
-    swatch: "#4B2245",
-  },
-  {
-    id: "circle",
-    icon: CircleIcon,
-    label: "Circle",
-    swatch: "#10B981",
-  },
-  {
-    id: "arrow",
-    icon: ArrowRight,
-    label: "Arrow",
-    swatch: "#F59E0B",
+    shape: null,
   },
 ];
 
+// Annotation style map
 const TOOL_ANNOTATION_MAP = {
-  rectangle: {
+  inflamed_gums: {
     stroke: "#4B2245",
-    strokeWidth: 2,
+    strokeWidth: 3,
   },
-  circle: {
-    stroke: "#10B981",
-    strokeWidth: 2,
+  malaligned: {
+    stroke: "#FFF700",
+    strokeWidth: 3,
   },
-  arrow: {
-    stroke: "#F59E0B",
-    strokeWidth: 2,
-    fill: "#F59E0B",
+  receded_gums: {
+    stroke: "#A78A8A",
+    strokeWidth: 3,
+  },
+  stains: {
+    stroke: "#FF0000",
+    strokeWidth: 3,
+    fill: "#FF0000",
+  },
+  attrition: {
+    stroke: "#00E6FF",
+    strokeWidth: 3,
+    fill: "#00E6FF",
+  },
+  crowns: {
+    stroke: "#C8007A",
+    strokeWidth: 3,
   },
 };
 
@@ -103,33 +142,62 @@ const AnnotationCanvas = (
 
     let newAnnotation;
     switch (tool) {
-      case "rectangle":
+      case "inflamed_gums":
         newAnnotation = {
           id,
-          type: "rectangle",
+          type: "rect",
           x: pos.x,
           y: pos.y,
           width: 0,
           height: 0,
-          ...TOOL_ANNOTATION_MAP.rectangle,
+          ...TOOL_ANNOTATION_MAP.inflamed_gums,
         };
         break;
-      case "circle":
+      case "malaligned":
         newAnnotation = {
           id,
           type: "circle",
           x: pos.x,
           y: pos.y,
           radius: 0,
-          ...TOOL_ANNOTATION_MAP.circle,
+          ...TOOL_ANNOTATION_MAP.malaligned,
         };
         break;
-      case "arrow":
+      case "receded_gums":
+        newAnnotation = {
+          id,
+          type: "rect",
+          x: pos.x,
+          y: pos.y,
+          width: 0,
+          height: 0,
+          ...TOOL_ANNOTATION_MAP.receded_gums,
+        };
+        break;
+      case "stains":
         newAnnotation = {
           id,
           type: "arrow",
           points: [pos.x, pos.y, pos.x, pos.y],
-          ...TOOL_ANNOTATION_MAP.arrow,
+          ...TOOL_ANNOTATION_MAP.stains,
+        };
+        break;
+      case "attrition":
+        newAnnotation = {
+          id,
+          type: "arrow",
+          points: [pos.x, pos.y, pos.x, pos.y],
+          ...TOOL_ANNOTATION_MAP.attrition,
+        };
+        break;
+      case "crowns":
+        newAnnotation = {
+          id,
+          type: "circle",
+          x: pos.x,
+          y: pos.y,
+          radius: 0,
+          ...TOOL_ANNOTATION_MAP.crowns,
         };
         break;
       default:
@@ -149,18 +217,20 @@ const AnnotationCanvas = (
     let updatedAnnotation = { ...currentAnnotation };
 
     switch (tool) {
-      case "rectangle":
+      case "inflamed_gums":
+      case "receded_gums":
         updatedAnnotation.width = point.x - currentAnnotation.x;
         updatedAnnotation.height = point.y - currentAnnotation.y;
         break;
-      case "circle":
-        const radius = Math.sqrt(
+      case "malaligned":
+      case "crowns":
+        updatedAnnotation.radius = Math.sqrt(
           Math.pow(point.x - currentAnnotation.x, 2) +
             Math.pow(point.y - currentAnnotation.y, 2)
         );
-        updatedAnnotation.radius = radius;
         break;
-      case "arrow":
+      case "stains":
+      case "attrition":
         updatedAnnotation.points = [
           currentAnnotation.points[0],
           currentAnnotation.points[1],
@@ -200,7 +270,7 @@ const AnnotationCanvas = (
 
   const renderAnnotation = (annotation) => {
     switch (annotation.type) {
-      case "rectangle":
+      case "rect":
         return (
           <Rect
             key={annotation.id}
