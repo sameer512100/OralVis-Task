@@ -27,6 +27,14 @@ const PatientDashboard = () => {
     image: null,
   });
 
+
+  const API_BASE_URL = "https://oralvis-backend-dxgf.onrender.com";
+  function getAbsoluteUrl(url) {
+    if (!url) return "";
+    if (url.startsWith("http")) return url;
+    return `${API_BASE_URL}${url}`;
+  }
+
   useEffect(() => {
     loadSubmissions();
   }, []);
@@ -322,8 +330,9 @@ const PatientDashboard = () => {
                       {submission.status === "reported" &&
                         submission.pdfUrl && (
                           <a
-                            href={`https://oralvis-backend-dxgf.onrender.com${submission.pdfUrl}`}
-                            download
+                            href={getAbsoluteUrl(submission.pdfUrl)}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="flex items-center px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors"
                           >
                             <Download className="h-4 w-4 mr-1" />
