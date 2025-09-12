@@ -30,7 +30,6 @@ const AnnotationPage = () => {
   const [newRecTitle, setNewRecTitle] = useState("");
   const [newRecText, setNewRecText] = useState("");
   const stageRef = useRef();
-  // Import AuthContext to get token
   const { token } = useAuth();
 
   useEffect(() => {
@@ -43,7 +42,6 @@ const AnnotationPage = () => {
       const data = await getSubmissionById(id);
       setSubmission(data);
       setError("");
-      // Load recommendations from annotationJson if available
       if (
         data.annotationJson &&
         Array.isArray(data.annotationJson.recommendations)
@@ -66,13 +64,11 @@ const AnnotationPage = () => {
     setSuccess("");
 
     try {
-      // Build annotationJson with recommendations
       const annotationJson = {
         ...annotationData,
         recommendations: recommendations,
       };
 
-      // Send annotationJson and annotatedImageBase64 at top level
       await saveAnnotation(id, {
         annotationJson,
         annotatedImageBase64: canvasDataUrl,
@@ -87,18 +83,16 @@ const AnnotationPage = () => {
     }
   };
 
-  // Download annotated image
   const handleDownloadAnnotatedImage = () => {
-  if (!submission.annotatedImageUrl) return;
-  const link = document.createElement("a");
-  link.href = submission.annotatedImageUrl;
-  link.download = `annotated_${submission.patientId || submission._id}.png`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+    if (!submission.annotatedImageUrl) return;
+    const link = document.createElement("a");
+    link.href = submission.annotatedImageUrl;
+    link.download = `annotated_${submission.patientId || submission._id}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
-  // Add recommendation
   const handleAddRecommendation = () => {
     if (!newRecTitle.trim() || !newRecText.trim()) return;
     setRecommendations((prev) => [
@@ -109,45 +103,40 @@ const AnnotationPage = () => {
     setNewRecText("");
   };
 
-  // Remove recommendation
   const handleRemoveRecommendation = (idx) => {
     setRecommendations((prev) => prev.filter((_, i) => i !== idx));
   };
 
- const handleGeneratePDF = async () => {
-   setGenerating(true);
-   setError("");
-   setSuccess("");
+  const handleGeneratePDF = async () => {
+    setGenerating(true);
+    setError("");
+    setSuccess("");
 
-   try {
-     // Send recommendations in the POST body
-     const response = await fetch(
-       `${API_BASE_URL}/submissions/${id}/generate-pdf`,
-       {
-         method: "POST",
-         credentials: "include",
-         headers: {
-           "Content-Type": "application/json",
-           ...(token ? { Authorization: `Bearer ${token}` } : {}),
-         },
-         body: JSON.stringify({
-           recommendations: recommendations,
-         }),
-       }
-     );
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/submissions/${id}/generate-pdf`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        }
+      );
 
-     if (!response.ok) {
-       throw new Error("Failed to generate PDF");
-     }
+      if (!response.ok) {
+        throw new Error("Failed to generate PDF");
+      }
 
-     setSuccess("PDF generated successfully!");
-     await loadSubmission();
-   } catch (error) {
-     setError(error.message || "Failed to generate PDF");
-   } finally {
-     setGenerating(false);
-   }
- };
+      setSuccess("PDF generated successfully!");
+      await loadSubmission();
+    } catch (error) {
+      setError(error.message || "Failed to generate PDF");
+    } finally {
+      setGenerating(false);
+    }
+  };
 
   if (loading) {
     return (
