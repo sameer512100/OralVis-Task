@@ -1,6 +1,6 @@
 # OralVis
 
-OralVis is a full-stack web application for oral health report annotation and management. It consists of a React frontend and a Node.js/Express backend, supporting user authentication, image annotation, report generation, and role-based access.
+OralVis is a full-stack web application for oral health report annotation and management. It consists of a React frontend and a Node.js/Express backend, supporting user authentication, image annotation, report generation, and role-based access. Images and reports are stored securely in AWS S3.
 
 ---
 
@@ -47,8 +47,8 @@ Below are some screenshots demonstrating the application features:
 
 ## Features
 - User authentication (JWT, roles: admin, patient)
-- Image upload and annotation
-- PDF report generation
+- Image upload and annotation (stored in AWS S3)
+- PDF report generation (using Puppeteer and EJS templates)
 - Role-based dashboards
 - RESTful API
 - Modern React UI (Vite, TailwindCSS)
@@ -64,12 +64,10 @@ OralVis/
 │   ├── models/      # Mongoose schemas
 │   ├── routes/      # API routes
 │   ├── templates/   # EJS report template
-│   ├── uploads/     # Uploaded images & reports
 │   ├── server.js    # Entry point
 │   └── package.json # Backend dependencies
 ├── frontend/        # React client
 │   ├── src/         # Source code
-│   ├── public/      # Static assets
 │   ├── index.html   # Main HTML
 │   └── package.json # Frontend dependencies
 ├── README.md        # This file
@@ -112,7 +110,7 @@ npm run dev
 
 ### 4. Access the App
 - Frontend: [http://localhost:5173](http://localhost:5173)
-- Backend API: [http://localhost:3000](http://localhost:3000)
+- Backend API: [http://localhost:3000](http://localhost:5000)
 
 ---
 
@@ -123,15 +121,16 @@ npm run dev
 - `POST /auth/login` — Login and receive JWT
 
 ### Submissions
-- `POST /submissions` — Submit annotated image/report
-- `GET /submissions` — Get all submissions (admin)
-- `GET /submissions/:id` — Get a specific submission
-- `GET /submissions/user/:userId` — Get submissions for a user
-- `PUT /submissions/:id` — Update a submission
-- `DELETE /submissions/:id` — Delete a submission
+- `POST /submissions` — Patient uploads image
+- `GET /submissions/mine` — Patient views own submissions
+- `GET /submissions` — Admin views all submissions
+- `GET /submissions/:id` — Admin views a specific submission
+- `POST /submissions/:id/annotate` — Admin annotates a submission
+- `POST /submissions/:id/generate-pdf` — Admin generates PDF report
+- `GET /submissions/:id/generated-image` — Get generated image
 
 ### File Uploads
-- Images and reports are uploaded to `backend/uploads/`
+- Images and PDF reports are uploaded to AWS S3.
 
 ### Middleware
 - JWT authentication (`auth.js`)
@@ -160,6 +159,10 @@ Create a `.env` file in `backend/`:
 PORT=3000
 MONGODB_URI=<your-mongodb-uri>
 JWT_SECRET=<your-secret>
+AWS_ACCESS_KEY_ID=<your-aws-access-key>
+AWS_SECRET_ACCESS_KEY=<your-aws-secret-key>
+AWS_REGION=<your-aws-region>
+AWS_S3_BUCKET=<your-s3-bucket>
 ```
 
 ---
