@@ -10,6 +10,8 @@ import {
   generatePDF,
   getGeneratedImage,
   getFileById,
+  updateSubmission,
+  deleteSubmission,
 } from "../controllers/submissionController.js";
 import { protect } from "../middleware/auth.js";
 import { requireRole } from "../middleware/roles.js";
@@ -25,6 +27,8 @@ router.post(
   requireRole("patient"),
   createSubmission
 );
+router.put("/:id", protect, requireRole("patient"), updateSubmission);
+router.delete("/:id", protect, requireRole("patient"), deleteSubmission);
 router.get("/mine", protect, requireRole("patient"), getMySubmissions);
 router.get("/:id/generated-image", protect, getGeneratedImage);
 

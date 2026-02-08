@@ -29,6 +29,7 @@ const AnnotationPage = () => {
   const [recommendations, setRecommendations] = useState([]);
   const [newRecTitle, setNewRecTitle] = useState("");
   const [newRecText, setNewRecText] = useState("");
+  const [isMaximized, setIsMaximized] = useState(false);
   const stageRef = useRef();
   const { token } = useAuth();
 
@@ -339,17 +340,36 @@ const AnnotationPage = () => {
         </div>
 
         {/* Annotation Canvas */}
-        <AnnotationCanvas
-          ref={stageRef}
-          imageUrl={getAbsoluteUrl(
-            submission.annotatedImageUrl || submission.imageUrl
-          )}
-          annotationJson={submission.annotationJson}
-          onSave={handleSaveAnnotation}
-          onGeneratePDF={handleGeneratePDF}
-          saving={saving}
-          generating={generating}
-        />
+        <div
+          className={
+            isMaximized
+              ? "fixed inset-0 z-50 bg-white p-4 overflow-auto"
+              : ""
+          }
+        >
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-medium text-gray-900">
+              Annotation Canvas
+            </h2>
+            <button
+              onClick={() => setIsMaximized((prev) => !prev)}
+              className="px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+            >
+              {isMaximized ? "Minimize" : "Maximize"}
+            </button>
+          </div>
+          <AnnotationCanvas
+            ref={stageRef}
+            imageUrl={getAbsoluteUrl(
+              submission.annotatedImageUrl || submission.imageUrl
+            )}
+            annotationJson={submission.annotationJson}
+            onSave={handleSaveAnnotation}
+            onGeneratePDF={handleGeneratePDF}
+            saving={saving}
+            generating={generating}
+          />
+        </div>
       </div>
     </Layout>
   );

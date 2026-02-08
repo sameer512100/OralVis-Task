@@ -32,3 +32,13 @@ export const generatePDF = async (id) => {
   const response = await apiClient.post(`/submissions/${id}/generate-pdf`);
   return response.data;
 };
+
+export const updateSubmission = async (id, data) => {
+  const response = await apiClient.put(`/submissions/${id}`, data);
+  return response.data;
+};
+
+export const deleteSubmission = async (id) => {
+  const response = await apiClient.delete(`/submissions/${id}`);
+  return response.data;
+};

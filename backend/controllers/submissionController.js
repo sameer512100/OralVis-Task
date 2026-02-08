@@ -37,6 +37,23 @@ const uploadBufferToGridFS = (buffer, filename, contentType) => {
   });
 };
 
+const deleteFileByUrl = async (fileUrl) => {
+  if (!fileUrl) return;
+  const fileId = fileUrl.split("/").pop();
+  let _id;
+  try {
+    _id = new ObjectId(fileId);
+  } catch {
+    return;
+  }
+  const bucket = getGridFSBucket();
+  try {
+    await bucket.delete(_id);
+  } catch {
+    // Ignore missing files
+  }
+};
+
 const streamFileById = async (res, fileId) => {
   const bucket = getGridFSBucket();
   let _id;
@@ -176,6 +193,77 @@ export const annotateSubmission = async (req, res) => {
     { new: true }
   );
   res.json(submission);
+};
+
+export const updateSubmission = async (req, res) => {
+  const { name, patientId, email, note, imageBase64 } = req.body;
+
+  const submission = await Submission.findById(req.params.id);
+  if (!submission) return res.status(404).json({ message: "Not found" });
+
+  if (submission.patient.toString() !== req.user._id.toString()) {
+    return res.status(403).json({ message: "Forbidden" });
+  }
+
+  if (submission.status !== "uploaded") {
+    return res
+      .status(400)
+      .json({ message: "Cannot edit after annotation" });
+  }
+
+  let imageUrl = submission.imageUrl;
+  if (imageBase64) {
+    const filename = `original_${uuidv4()}.png`;
+    const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, "");
+    const buffer = Buffer.from(base64Data, "base64");
+    try {
+      const fileId = await uploadBufferToGridFS(
+        buffer,
+        filename,
+        "image/png"
+      );
+      if (submission.imageUrl) {
+        await deleteFileByUrl(submission.imageUrl);
+      }
+      imageUrl = `/submissions/files/${fileId}`;
+    } catch (err) {
+      return res.status(500).json({
+        message: "Failed to upload image to MongoDB",
+        error: err.message,
+      });
+    }
+  }
+
+  submission.name = name ?? submission.name;
+  submission.patientId = patientId ?? submission.patientId;
+  submission.email = email ?? submission.email;
+  submission.note = note ?? submission.note;
+  submission.imageUrl = imageUrl;
+
+  await submission.save();
+  res.json(submission);
+};
+
+export const deleteSubmission = async (req, res) => {
+  const submission = await Submission.findById(req.params.id);
+  if (!submission) return res.status(404).json({ message: "Not found" });
+
+  if (submission.patient.toString() !== req.user._id.toString()) {
+    return res.status(403).json({ message: "Forbidden" });
+  }
+
+  if (submission.status !== "uploaded") {
+    return res
+      .status(400)
+      .json({ message: "Cannot delete after annotation" });
+  }
+
+  await deleteFileByUrl(submission.imageUrl);
+  await deleteFileByUrl(submission.annotatedImageUrl);
+  await deleteFileByUrl(submission.pdfUrl);
+
+  await submission.deleteOne();
+  res.json({ message: "Deleted" });
 };
 
 export const generatePDF = async (req, res) => {

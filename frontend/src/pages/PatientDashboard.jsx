@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { createSubmission, getMySubmissions } from "../api/submissions";
+import {
+  createSubmission,
+  getMySubmissions,
+  updateSubmission,
+  deleteSubmission,
+} from "../api/submissions";
 import Layout from "../components/Layout";
 import {
   Upload,
@@ -18,6 +23,10 @@ const PatientDashboard = () => {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [editingId, setEditingId] = useState(null);
+  const [editNote, setEditNote] = useState("");
+  const [editImageBase64, setEditImageBase64] = useState(null);
+  const [editing, setEditing] = useState(false);
 
   const [formData, setFormData] = useState({
     name: user?.name || "",
@@ -110,6 +119,7 @@ const PatientDashboard = () => {
 
   const getStatusIcon = (status) => {
     switch (status) {
+      case "uploaded":
       case "pending":
         return <Clock className="h-4 w-4 text-yellow-500" />;
       case "annotated":
@@ -123,6 +133,7 @@ const PatientDashboard = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
+      case "uploaded":
       case "pending":
         return "bg-yellow-100 text-yellow-800";
       case "annotated":
@@ -131,6 +142,68 @@ const PatientDashboard = () => {
         return "bg-green-100 text-green-800";
       default:
         return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  const startEdit = (submission) => {
+    setEditingId(submission._id);
+    setEditNote(submission.note || "");
+    setEditImageBase64(null);
+    setError("");
+    setSuccess("");
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditNote("");
+    setEditImageBase64(null);
+  };
+
+  const handleEditFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) {
+      setEditImageBase64(null);
+      return;
+    }
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setEditImageBase64(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSaveEdit = async (submissionId) => {
+    setEditing(true);
+    setError("");
+    setSuccess("");
+    try {
+      await updateSubmission(submissionId, {
+        note: editNote,
+        imageBase64: editImageBase64 || undefined,
+      });
+      setSuccess("Submission updated successfully!");
+      cancelEdit();
+      await loadSubmissions();
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to update submission");
+    } finally {
+      setEditing(false);
+    }
+  };
+
+  const handleDelete = async (submissionId) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this submission?"
+    );
+    if (!confirmed) return;
+    setError("");
+    setSuccess("");
+    try {
+      await deleteSubmission(submissionId);
+      setSuccess("Submission deleted successfully!");
+      await loadSubmissions();
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to delete submission");
     }
   };
 
@@ -333,19 +406,83 @@ const PatientDashboard = () => {
                       </p>
                     </div>
 
-                    {submission.status === "reported" && submission.pdfUrl && (
-                      <a
-                        href={getAbsoluteUrl(submission.pdfUrl)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        title="Download your annotated report"
-                        className="flex items-center px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors mb-1"
-                      >
-                        <Download className="h-4 w-4 mr-1" />
-                        Download Report
-                      </a>
-                    )}
+                    <div className="flex flex-col items-end gap-2">
+                      {submission.status === "reported" && submission.pdfUrl && (
+                        <a
+                          href={getAbsoluteUrl(submission.pdfUrl)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title="Download your annotated report"
+                          className="flex items-center px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors"
+                        >
+                          <Download className="h-4 w-4 mr-1" />
+                          Download Report
+                        </a>
+                      )}
+
+                      {submission.status === "uploaded" && (
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => startEdit(submission)}
+                            className="px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDelete(submission._id)}
+                            className="px-3 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-md hover:bg-red-100 transition-colors"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
+
+                  {editingId === submission._id && (
+                    <div className="mt-4 rounded-lg border bg-white p-4">
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">
+                            Update Note
+                          </label>
+                          <textarea
+                            rows={3}
+                            className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                            value={editNote}
+                            onChange={(e) => setEditNote(e.target.value)}
+                            placeholder="Update your note..."
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">
+                            Replace Image (optional)
+                          </label>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                            onChange={handleEditFileChange}
+                          />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleSaveEdit(submission._id)}
+                            disabled={editing}
+                            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
+                          >
+                            {editing ? "Saving..." : "Save"}
+                          </button>
+                          <button
+                            onClick={cancelEdit}
+                            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
