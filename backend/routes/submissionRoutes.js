@@ -9,6 +9,7 @@ import {
   annotateSubmission,
   generatePDF,
   getGeneratedImage,
+  getFileById,
 } from "../controllers/submissionController.js";
 import { protect } from "../middleware/auth.js";
 import { requireRole } from "../middleware/roles.js";
@@ -17,6 +18,7 @@ import { requireRole } from "../middleware/roles.js";
 const router = express.Router();
 
 // Patient routes
+router.get("/files/:fileId", getFileById);
 router.post(
   "/",
   protect,

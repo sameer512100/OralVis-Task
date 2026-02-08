@@ -86,7 +86,7 @@ const AnnotationPage = () => {
   const handleDownloadAnnotatedImage = () => {
     if (!submission.annotatedImageUrl) return;
     const link = document.createElement("a");
-    link.href = submission.annotatedImageUrl;
+    link.href = getAbsoluteUrl(submission.annotatedImageUrl);
     link.download = `annotated_${submission.patientId || submission._id}.png`;
     document.body.appendChild(link);
     link.click();
@@ -239,7 +239,7 @@ const AnnotationPage = () => {
             {submission.pdfUrl && (
               <div className="mt-6">
                 <a
-                  href={submission.pdfUrl}
+                  href={getAbsoluteUrl(submission.pdfUrl)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors"
@@ -331,7 +331,7 @@ const AnnotationPage = () => {
           </h2>
           <div className="flex justify-center">
             <img
-              src={submission.imageUrl}
+              src={getAbsoluteUrl(submission.imageUrl)}
               alt="Original"
               className="max-w-full max-h-[400px] rounded shadow"
             />
@@ -341,7 +341,9 @@ const AnnotationPage = () => {
         {/* Annotation Canvas */}
         <AnnotationCanvas
           ref={stageRef}
-          imageUrl={submission.annotatedImageUrl || submission.imageUrl}
+          imageUrl={getAbsoluteUrl(
+            submission.annotatedImageUrl || submission.imageUrl
+          )}
           annotationJson={submission.annotationJson}
           onSave={handleSaveAnnotation}
           onGeneratePDF={handleGeneratePDF}

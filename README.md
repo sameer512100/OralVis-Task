@@ -1,6 +1,6 @@
 # OralVis
 
-OralVis is a full-stack web application for oral health report annotation and management. It consists of a React frontend and a Node.js/Express backend, supporting user authentication, image annotation, report generation, and role-based access. Images and reports are stored securely in AWS S3.
+OralVis is a full-stack web application for oral health report annotation and management. It consists of a React frontend and a Node.js/Express backend, supporting user authentication, image annotation, report generation, and role-based access. Images and reports are stored in MongoDB (GridFS).
 
 ---
 
@@ -48,7 +48,7 @@ Below are some screenshots demonstrating the application features:
 
 ## Features
 - User authentication (JWT, roles: admin, patient)
-- Image upload and annotation (stored in AWS S3)
+- Image upload and annotation (stored in MongoDB GridFS)
 - PDF report generation (using Puppeteer and EJS templates)
 - Role-based dashboards
 - RESTful API
@@ -131,7 +131,7 @@ npm run dev
 - `GET /submissions/:id/generated-image` — Get generated image
 
 ### File Uploads
-- Images and PDF reports are uploaded to AWS S3.
+- Images and PDF reports are uploaded to MongoDB (GridFS).
 
 ### Middleware
 - JWT authentication (`auth.js`)
@@ -160,10 +160,6 @@ Create a `.env` file in `backend/`:
 PORT=3000
 MONGODB_URI=<your-mongodb-uri>
 JWT_SECRET=<your-secret>
-AWS_ACCESS_KEY_ID=<your-aws-access-key>
-AWS_SECRET_ACCESS_KEY=<your-aws-secret-key>
-AWS_REGION=<your-aws-region>
-AWS_S3_BUCKET=<your-s3-bucket>
 ```
 
 ---
