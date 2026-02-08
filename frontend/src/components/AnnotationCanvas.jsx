@@ -109,6 +109,7 @@ const AnnotationCanvas = (
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentAnnotation, setCurrentAnnotation] = useState(null);
   const [hasChanges, setHasChanges] = useState(false);
+  const [zoom, setZoom] = useState(1);
   const stageRef = useRef();
 
   // Load image
@@ -131,6 +132,7 @@ const AnnotationCanvas = (
       setAnnotations([]);
     }
     setHasChanges(false);
+    setZoom(1);
   }, [annotationJson, imageUrl]);
 
   // Mouse events
@@ -376,25 +378,43 @@ const AnnotationCanvas = (
       {/* Canvas */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         {image ? (
-          <Stage
-            ref={stageRef}
-            width={Math.min(image.width, 1200)}
-            height={Math.min(image.height, 800)}
-            onMouseDown={handleMouseDown}
-            onMousemove={handleMouseMove}
-            onMouseup={handleMouseUp}
-            className="border"
-          >
-            <Layer>
-              <KonvaImage
-                image={image}
-                width={Math.min(image.width, 1200)}
-                height={Math.min(image.height, 800)}
+          <div className="p-3">
+            <div className="overflow-auto border rounded">
+              <Stage
+                ref={stageRef}
+                width={Math.min(image.width * zoom, 1600)}
+                height={Math.min(image.height * zoom, 1000)}
+                scaleX={zoom}
+                scaleY={zoom}
+                onMouseDown={handleMouseDown}
+                onMousemove={handleMouseMove}
+                onMouseup={handleMouseUp}
+                className="bg-white"
+              >
+                <Layer>
+                  <KonvaImage image={image} />
+                  {annotations.map(renderAnnotation)}
+                  {currentAnnotation && renderAnnotation(currentAnnotation)}
+                </Layer>
+              </Stage>
+            </div>
+
+            <div className="mt-3 flex items-center gap-3">
+              <span className="text-sm text-gray-600">Zoom</span>
+              <input
+                type="range"
+                min="0.5"
+                max="2"
+                step="0.1"
+                value={zoom}
+                onChange={(e) => setZoom(Number(e.target.value))}
+                className="w-full"
               />
-              {annotations.map(renderAnnotation)}
-              {currentAnnotation && renderAnnotation(currentAnnotation)}
-            </Layer>
-          </Stage>
+              <span className="text-sm text-gray-600 w-12 text-right">
+                {Math.round(zoom * 100)}%
+              </span>
+            </div>
+          </div>
         ) : (
           <div className="flex items-center justify-center h-96">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
