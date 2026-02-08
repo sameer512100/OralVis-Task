@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { registerUser, loginUser } from "../api/auth";
 import { Shield, Mail, Lock, User, Hash } from "lucide-react";
@@ -12,6 +12,7 @@ const AuthPage = () => {
   const [signupRole, setSignupRole] = useState("patient"); // "patient" or "admin"
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -19,6 +20,15 @@ const AuthPage = () => {
     email: "",
     password: "",
   });
+
+  useEffect(() => {
+    const mode = searchParams.get("mode");
+    if (mode === "signup") {
+      setIsLogin(false);
+    } else if (mode === "signin") {
+      setIsLogin(true);
+    }
+  }, [searchParams]);
 
   const handleInputChange = (e) => {
     setFormData({

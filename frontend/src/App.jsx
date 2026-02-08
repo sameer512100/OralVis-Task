@@ -11,6 +11,7 @@ import AuthPage from "./pages/AuthPage";
 import PatientDashboard from "./pages/PatientDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import AnnotationPage from "./pages/AnnotationPage";
+import HomePage from "./pages/HomePage";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <div className="min-h-screen bg-gray-50">
           <Routes>
             {/* Public Routes */}
+            <Route path="/" element={<HomePage />} />
             <Route path="/auth" element={<AuthPage />} />
 
             {/* Patient Routes */}
@@ -49,8 +51,8 @@ function App() {
               }
             />
 
-            {/* Default redirect */}
-            <Route path="/" element={<Navigate to="/auth" replace />} />
+            {/* Fallback */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
       </Router>
