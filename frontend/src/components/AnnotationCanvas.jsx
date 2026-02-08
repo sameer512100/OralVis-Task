@@ -110,6 +110,8 @@ const AnnotationCanvas = (
   const [currentAnnotation, setCurrentAnnotation] = useState(null);
   const [hasChanges, setHasChanges] = useState(false);
   const [zoom, setZoom] = useState(1);
+  const [history, setHistory] = useState([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
   const stageRef = useRef();
 
   // Load image
@@ -133,7 +135,24 @@ const AnnotationCanvas = (
     }
     setHasChanges(false);
     setZoom(1);
+    setHistory([
+      Array.isArray(annotationJson?.annotations)
+        ? annotationJson.annotations
+        : [],
+    ]);
+    setHistoryIndex(0);
   }, [annotationJson, imageUrl]);
+
+  const pushHistory = (nextAnnotations) => {
+    setHistoryIndex((prevIndex) => {
+      const nextIndex = prevIndex + 1;
+      setHistory((prev) => {
+        const truncated = prev.slice(0, nextIndex);
+        return [...truncated, nextAnnotations];
+      });
+      return nextIndex;
+    });
+  };
 
   // Mouse events
   const handleMouseDown = (e) => {
@@ -248,7 +267,11 @@ const AnnotationCanvas = (
   const handleMouseUp = () => {
     if (!isDrawing || !currentAnnotation) return;
 
-    setAnnotations((prev) => [...prev, currentAnnotation]);
+    setAnnotations((prev) => {
+      const next = [...prev, currentAnnotation];
+      pushHistory(next);
+      return next;
+    });
     setCurrentAnnotation(null);
     setIsDrawing(false);
     setHasChanges(true);
@@ -257,8 +280,27 @@ const AnnotationCanvas = (
   // Clear all annotations
   const handleClear = () => {
     setAnnotations([]);
+    pushHistory([]);
     setCurrentAnnotation(null);
     setIsDrawing(false);
+    setHasChanges(true);
+  };
+
+  const handleUndo = () => {
+    if (historyIndex <= 0) return;
+    const nextIndex = historyIndex - 1;
+    const prevAnnotations = history[nextIndex] || [];
+    setHistoryIndex(nextIndex);
+    setAnnotations(prevAnnotations);
+    setHasChanges(true);
+  };
+
+  const handleRedo = () => {
+    if (historyIndex >= history.length - 1) return;
+    const nextIndex = historyIndex + 1;
+    const nextAnnotations = history[nextIndex] || [];
+    setHistoryIndex(nextIndex);
+    setAnnotations(nextAnnotations);
     setHasChanges(true);
   };
 
@@ -340,6 +382,22 @@ const AnnotationCanvas = (
         </div>
 
         <div className="flex items-center space-x-3">
+          <button
+            onClick={handleUndo}
+            disabled={historyIndex <= 0}
+            className="px-3 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            Undo
+          </button>
+
+          <button
+            onClick={handleRedo}
+            disabled={historyIndex >= history.length - 1}
+            className="px-3 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            Redo
+          </button>
+
           <button
             onClick={handleClear}
             className="px-3 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"

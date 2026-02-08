@@ -24,6 +24,7 @@ const AdminDashboard = () => {
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
 
   useEffect(() => {
     loadSubmissions();
@@ -42,7 +43,7 @@ const AdminDashboard = () => {
 
   const getStatusIcon = (status) => {
     switch (status) {
-      case "pending":
+      case "uploaded":
         return <Clock className="h-4 w-4 text-yellow-500" />;
       case "annotated":
         return <AlertCircle className="h-4 w-4 text-blue-500" />;
@@ -55,7 +56,7 @@ const AdminDashboard = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case "pending":
+      case "uploaded":
         return "bg-yellow-100 text-yellow-800";
       case "annotated":
         return "bg-blue-100 text-blue-800";
@@ -69,6 +70,11 @@ const AdminDashboard = () => {
   const getStatusCount = (status) => {
     return submissions.filter((s) => s.status === status).length;
   };
+
+  const filteredSubmissions = submissions.filter((submission) => {
+    if (statusFilter === "all") return true;
+    return submission.status === statusFilter;
+  });
 
   if (loading) {
     return (
@@ -121,10 +127,10 @@ const AdminDashboard = () => {
                 <div className="ml-5 w-0 flex-1">
                   <dl>
                     <dt className="text-sm font-medium text-gray-500 truncate">
-                      Pending
+                      Uploaded
                     </dt>
                     <dd className="text-lg font-medium text-gray-900">
-                      {getStatusCount("pending")}
+                      {getStatusCount("uploaded")}
                     </dd>
                   </dl>
                 </div>
@@ -176,10 +182,25 @@ const AdminDashboard = () => {
         {/* Submissions Table */}
         <div className="bg-white shadow rounded-lg">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-medium text-gray-900 flex items-center">
-              <Users className="h-5 w-5 mr-2" />
-              All Submissions
-            </h2>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <h2 className="text-lg font-medium text-gray-900 flex items-center">
+                <Users className="h-5 w-5 mr-2" />
+                All Submissions
+              </h2>
+              <div className="flex items-center gap-2">
+                <label className="text-sm text-gray-600">Filter</label>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="text-sm border rounded-md px-2 py-1"
+                >
+                  <option value="all">All</option>
+                  <option value="uploaded">Uploaded</option>
+                  <option value="annotated">Annotated</option>
+                  <option value="reported">Reported</option>
+                </select>
+              </div>
+            </div>
           </div>
 
           <div className="overflow-x-auto">
@@ -189,7 +210,7 @@ const AdminDashboard = () => {
                   <p className="text-sm text-red-700">{error}</p>
                 </div>
               </div>
-            ) : submissions.length === 0 ? (
+            ) : filteredSubmissions.length === 0 ? (
               <div className="p-6 text-center text-gray-500 flex flex-col items-center">
                 <FileText className="h-10 w-10 mb-2 text-gray-300" />
                 <p>No submissions found</p>
@@ -220,7 +241,7 @@ const AdminDashboard = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {submissions.map((submission) => (
+                    {filteredSubmissions.map((submission) => (
                       <tr
                         key={submission._id}
                         className="hover:bg-blue-50 transition-colors duration-150"
