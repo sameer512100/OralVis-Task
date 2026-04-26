@@ -109,6 +109,7 @@ export const getFileById = async (req, res) => {
 };
 
 export const createSubmission = async (req, res) => {
+<<<<<<< HEAD
   const {
     name,
     patientId,
@@ -126,6 +127,10 @@ export const createSubmission = async (req, res) => {
       })
     : null;
   const isDuplicate = Boolean(duplicateFlag || existingDuplicate);
+=======
+  const { name, patientId, email, note, imageBase64 } = req.body;
+  let imageUrl = "";
+>>>>>>> e3467850beb133d5751683f6f0d9ce34f94ca84f
   if (imageBase64) {
     const filename = `original_${uuidv4()}.png`;
     const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, "");
@@ -152,9 +157,12 @@ export const createSubmission = async (req, res) => {
       email,
       note,
       imageUrl,
+<<<<<<< HEAD
       uploadFingerprint,
       duplicateFlag: isDuplicate,
       uploadedAt: new Date(),
+=======
+>>>>>>> e3467850beb133d5751683f6f0d9ce34f94ca84f
       status: "uploaded",
     });
     res.json(submission);
@@ -207,12 +215,16 @@ export const annotateSubmission = async (req, res) => {
 
   const submission = await Submission.findByIdAndUpdate(
     req.params.id,
+<<<<<<< HEAD
     {
       annotationJson,
       annotatedImageUrl,
       status: "annotated",
       annotatedAt: new Date(),
     },
+=======
+    { annotationJson, annotatedImageUrl, status: "annotated" },
+>>>>>>> e3467850beb133d5751683f6f0d9ce34f94ca84f
     { new: true }
   );
   res.json(submission);
@@ -383,7 +395,10 @@ export const generatePDF = async (req, res) => {
     // Update submission with PDF URL and status
     submission.status = "reported";
     submission.pdfUrl = pdfUrl;
+<<<<<<< HEAD
     submission.reportedAt = new Date();
+=======
+>>>>>>> e3467850beb133d5751683f6f0d9ce34f94ca84f
     await submission.save();
 
     // Return PDF URL in response
