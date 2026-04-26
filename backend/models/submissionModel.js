@@ -15,7 +15,6 @@ const submissionSchema = new mongoose.Schema(
     annotatedImageUrl: String,
     annotationJson: Object,
     pdfUrl: String,
-<<<<<<< HEAD
     uploadFingerprint: String,
     duplicateFlag: {
       type: Boolean,
@@ -24,8 +23,6 @@ const submissionSchema = new mongoose.Schema(
     uploadedAt: Date,
     annotatedAt: Date,
     reportedAt: Date,
-=======
->>>>>>> e3467850beb133d5751683f6f0d9ce34f94ca84f
     status: {
       type: String,
       enum: ["uploaded", "annotated", "reported"],

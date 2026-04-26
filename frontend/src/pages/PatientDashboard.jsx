@@ -7,10 +7,7 @@ import {
   deleteSubmission,
 } from "../api/submissions";
 import Layout from "../components/Layout";
-<<<<<<< HEAD
 import SubmissionTimeline from "../components/SubmissionTimeline";
-=======
->>>>>>> e3467850beb133d5751683f6f0d9ce34f94ca84f
 import {
   Upload,
   FileText,
@@ -31,12 +28,9 @@ const PatientDashboard = () => {
   const [editNote, setEditNote] = useState("");
   const [editImageBase64, setEditImageBase64] = useState(null);
   const [editing, setEditing] = useState(false);
-<<<<<<< HEAD
   const [showDuplicateModal, setShowDuplicateModal] = useState(false);
   const [pendingFileFingerprint, setPendingFileFingerprint] = useState("");
   const [pendingDuplicateFlag, setPendingDuplicateFlag] = useState(false);
-=======
->>>>>>> e3467850beb133d5751683f6f0d9ce34f94ca84f
 
   const [formData, setFormData] = useState({
     name: user?.name || "",
@@ -83,12 +77,9 @@ const PatientDashboard = () => {
     const file = e.target.files[0];
     if (!file) {
       setFormData({ ...formData, image: null });
-<<<<<<< HEAD
       setShowDuplicateModal(false);
       setPendingFileFingerprint("");
       setPendingDuplicateFlag(false);
-=======
->>>>>>> e3467850beb133d5751683f6f0d9ce34f94ca84f
       return;
     }
     const reader = new FileReader();
@@ -96,7 +87,6 @@ const PatientDashboard = () => {
       setFormData({ ...formData, image: reader.result });
     };
     reader.readAsDataURL(file);
-<<<<<<< HEAD
     const fingerprint = [file.name, file.size, file.type, file.lastModified].join(
       ":"
     );
@@ -106,18 +96,11 @@ const PatientDashboard = () => {
     setPendingFileFingerprint(fingerprint);
     setPendingDuplicateFlag(duplicateMatch);
     setShowDuplicateModal(duplicateMatch);
-=======
->>>>>>> e3467850beb133d5751683f6f0d9ce34f94ca84f
     setError("");
     setSuccess("");
   };
 
-<<<<<<< HEAD
   const performSubmit = async (forceDuplicate = false) => {
-=======
-  const handleSubmit = async (e) => {
-    e.preventDefault();
->>>>>>> e3467850beb133d5751683f6f0d9ce34f94ca84f
     setUploading(true);
     setError("");
     setSuccess("");
@@ -129,11 +112,8 @@ const PatientDashboard = () => {
         email: formData.email,
         note: formData.note,
         imageBase64: formData.image,
-<<<<<<< HEAD
         uploadFingerprint: pendingFileFingerprint,
         duplicateFlag: forceDuplicate || pendingDuplicateFlag,
-=======
->>>>>>> e3467850beb133d5751683f6f0d9ce34f94ca84f
       };
       await createSubmission(submitData);
       setSuccess("Image uploaded successfully!");
@@ -142,18 +122,11 @@ const PatientDashboard = () => {
         note: "",
         image: null,
       });
-<<<<<<< HEAD
       setShowDuplicateModal(false);
       setPendingFileFingerprint("");
       setPendingDuplicateFlag(false);
       const fileInput = document.getElementById("image");
       if (fileInput) fileInput.value = "";
-=======
-      // Reset file input
-      const fileInput = document.getElementById("image");
-      if (fileInput) fileInput.value = "";
-      // Reload submissions
->>>>>>> e3467850beb133d5751683f6f0d9ce34f94ca84f
       loadSubmissions();
     } catch (error) {
       setError(error.response?.data?.message || "Failed to upload image");
@@ -162,7 +135,6 @@ const PatientDashboard = () => {
     }
   };
 
-<<<<<<< HEAD
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (pendingDuplicateFlag && !showDuplicateModal) {
@@ -188,8 +160,6 @@ const PatientDashboard = () => {
     if (fileInput) fileInput.value = "";
   };
 
-=======
->>>>>>> e3467850beb133d5751683f6f0d9ce34f94ca84f
   const getStatusIcon = (status) => {
     switch (status) {
       case "uploaded":
@@ -421,7 +391,6 @@ const PatientDashboard = () => {
             )}
           </button>
         </form>
-<<<<<<< HEAD
 
         {showDuplicateModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
@@ -451,8 +420,6 @@ const PatientDashboard = () => {
             </div>
           </div>
         )}
-=======
->>>>>>> e3467850beb133d5751683f6f0d9ce34f94ca84f
       </div>
 
       {/* Divider */}
@@ -544,13 +511,10 @@ const PatientDashboard = () => {
                     </div>
                   </div>
 
-<<<<<<< HEAD
                   <div className="mt-4">
                     <SubmissionTimeline submission={submission} />
                   </div>
 
-=======
->>>>>>> e3467850beb133d5751683f6f0d9ce34f94ca84f
                   {editingId === submission._id && (
                     <div className="mt-4 rounded-lg border bg-white p-4">
                       <div className="space-y-3">

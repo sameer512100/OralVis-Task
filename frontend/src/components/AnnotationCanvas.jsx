@@ -100,11 +100,7 @@ const TOOL_ANNOTATION_MAP = {
 };
 
 const AnnotationCanvas = (
-<<<<<<< HEAD
   { imageUrl, annotationJson, onSave, onGeneratePDF, saving, generating, submissionId },
-=======
-  { imageUrl, annotationJson, onSave, onGeneratePDF, saving, generating },
->>>>>>> e3467850beb133d5751683f6f0d9ce34f94ca84f
   ref
 ) => {
   const [image, setImage] = useState(null);
@@ -116,14 +112,10 @@ const AnnotationCanvas = (
   const [zoom, setZoom] = useState(1);
   const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
-<<<<<<< HEAD
   const [selectedAnnotationId, setSelectedAnnotationId] = useState(null);
   const [draftSavedAt, setDraftSavedAt] = useState("");
   const stageRef = useRef();
   const draftKey = submissionId ? `annotation-draft:${submissionId}` : null;
-=======
-  const stageRef = useRef();
->>>>>>> e3467850beb133d5751683f6f0d9ce34f94ca84f
 
   // Load image
   useEffect(() => {
@@ -139,7 +131,6 @@ const AnnotationCanvas = (
 
   // Load existing annotations
   useEffect(() => {
-<<<<<<< HEAD
     let storedDraft = null;
     if (draftKey) {
       try {
@@ -189,22 +180,6 @@ const AnnotationCanvas = (
     localStorage.setItem(draftKey, JSON.stringify(payload));
     setDraftSavedAt(payload.savedAt);
   }, [annotations, draftKey, hasChanges]);
-=======
-    if (annotationJson && Array.isArray(annotationJson.annotations)) {
-      setAnnotations(annotationJson.annotations);
-    } else {
-      setAnnotations([]);
-    }
-    setHasChanges(false);
-    setZoom(1);
-    setHistory([
-      Array.isArray(annotationJson?.annotations)
-        ? annotationJson.annotations
-        : [],
-    ]);
-    setHistoryIndex(0);
-  }, [annotationJson, imageUrl]);
->>>>>>> e3467850beb133d5751683f6f0d9ce34f94ca84f
 
   const pushHistory = (nextAnnotations) => {
     setHistoryIndex((prevIndex) => {
@@ -217,7 +192,6 @@ const AnnotationCanvas = (
     });
   };
 
-<<<<<<< HEAD
   const updateAnnotationAt = (annotationId, updater) => {
     setAnnotations((prev) => {
       const next = prev.map((annotation) =>
@@ -255,8 +229,6 @@ const AnnotationCanvas = (
     }
   };
 
-=======
->>>>>>> e3467850beb133d5751683f6f0d9ce34f94ca84f
   // Mouse events
   const handleMouseDown = (e) => {
     if (tool === "select") return;
@@ -385,10 +357,7 @@ const AnnotationCanvas = (
     setAnnotations([]);
     pushHistory([]);
     setCurrentAnnotation(null);
-<<<<<<< HEAD
     setSelectedAnnotationId(null);
-=======
->>>>>>> e3467850beb133d5751683f6f0d9ce34f94ca84f
     setIsDrawing(false);
     setHasChanges(true);
   };
@@ -411,7 +380,6 @@ const AnnotationCanvas = (
     setHasChanges(true);
   };
 
-<<<<<<< HEAD
   const handleDeleteSelected = () => {
     if (!selectedAnnotationId) return;
     const nextAnnotations = annotations.filter(
@@ -436,29 +404,21 @@ const AnnotationCanvas = (
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [tool, selectedAnnotationId, annotations]);
 
-=======
->>>>>>> e3467850beb133d5751683f6f0d9ce34f94ca84f
   // Save only if there are changes
   const handleSave = async () => {
     if (!stageRef.current || !hasChanges) return;
     const dataURL = stageRef.current.toDataURL();
     await onSave({ annotations }, dataURL);
-<<<<<<< HEAD
     if (draftKey) {
       localStorage.removeItem(draftKey);
       setDraftSavedAt("");
     }
-=======
->>>>>>> e3467850beb133d5751683f6f0d9ce34f94ca84f
     setHasChanges(false);
   };
 
   const renderAnnotation = (annotation) => {
-<<<<<<< HEAD
     const isSelected = annotation.id === selectedAnnotationId;
 
-=======
->>>>>>> e3467850beb133d5751683f6f0d9ce34f94ca84f
     switch (annotation.type) {
       case "rect":
         return (
@@ -471,7 +431,6 @@ const AnnotationCanvas = (
             stroke={annotation.stroke}
             strokeWidth={annotation.strokeWidth}
             fill="transparent"
-<<<<<<< HEAD
             draggable={tool === "select"}
             onClick={() => {
               if (tool === "select") setSelectedAnnotationId(annotation.id);
@@ -488,8 +447,6 @@ const AnnotationCanvas = (
               updateAnnotationAt(annotation.id, () => nextAnnotation);
             }}
             strokeDash={isSelected ? [8, 4] : undefined}
-=======
->>>>>>> e3467850beb133d5751683f6f0d9ce34f94ca84f
           />
         );
       case "circle":
@@ -502,7 +459,6 @@ const AnnotationCanvas = (
             stroke={annotation.stroke}
             strokeWidth={annotation.strokeWidth}
             fill="transparent"
-<<<<<<< HEAD
             draggable={tool === "select"}
             onClick={() => {
               if (tool === "select") setSelectedAnnotationId(annotation.id);
@@ -519,8 +475,6 @@ const AnnotationCanvas = (
               updateAnnotationAt(annotation.id, () => nextAnnotation);
             }}
             dash={isSelected ? [8, 4] : undefined}
-=======
->>>>>>> e3467850beb133d5751683f6f0d9ce34f94ca84f
           />
         );
       case "arrow":
@@ -533,7 +487,6 @@ const AnnotationCanvas = (
             fill={annotation.fill}
             pointerLength={10}
             pointerWidth={10}
-<<<<<<< HEAD
             draggable={false}
             onClick={() => {
               if (tool === "select") setSelectedAnnotationId(annotation.id);
@@ -542,8 +495,6 @@ const AnnotationCanvas = (
               if (tool === "select") setSelectedAnnotationId(annotation.id);
             }}
             dash={isSelected ? [8, 4] : undefined}
-=======
->>>>>>> e3467850beb133d5751683f6f0d9ce34f94ca84f
           />
         );
       default:
@@ -553,15 +504,12 @@ const AnnotationCanvas = (
 
   return (
     <div className="space-y-4">
-<<<<<<< HEAD
       {tool === "select" && (
         <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
           Select mode is active. Click an annotation to select it, drag to move it, or press Delete/Backspace to remove it.
         </div>
       )}
 
-=======
->>>>>>> e3467850beb133d5751683f6f0d9ce34f94ca84f
       {/* Toolbar */}
       <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow">
         <div className="flex items-center space-x-2">
@@ -610,7 +558,6 @@ const AnnotationCanvas = (
           </button>
 
           <button
-<<<<<<< HEAD
             onClick={handleDeleteSelected}
             disabled={!selectedAnnotationId}
             className="px-3 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-md hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -619,8 +566,6 @@ const AnnotationCanvas = (
           </button>
 
           <button
-=======
->>>>>>> e3467850beb133d5751683f6f0d9ce34f94ca84f
             onClick={handleSave}
             disabled={saving || !hasChanges}
             className="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -648,15 +593,12 @@ const AnnotationCanvas = (
         </div>
       </div>
 
-<<<<<<< HEAD
       {draftSavedAt && hasChanges && (
         <p className="px-1 text-xs text-gray-500">
           Draft auto-saved locally at {new Date(draftSavedAt).toLocaleString()}
         </p>
       )}
 
-=======
->>>>>>> e3467850beb133d5751683f6f0d9ce34f94ca84f
       {/* Canvas */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         {image ? (

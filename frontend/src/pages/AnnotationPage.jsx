@@ -7,10 +7,7 @@ import {
 } from "../api/submissions";
 import Layout from "../components/Layout";
 import AnnotationCanvas from "../components/AnnotationCanvas";
-<<<<<<< HEAD
 import SubmissionTimeline from "../components/SubmissionTimeline";
-=======
->>>>>>> e3467850beb133d5751683f6f0d9ce34f94ca84f
 import { ArrowLeft, User, Hash, Mail, FileText, Download } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
@@ -266,13 +263,10 @@ const AnnotationPage = () => {
             >
               {submission.status}
             </span>
-<<<<<<< HEAD
 
             <div className="mt-6">
               <SubmissionTimeline submission={submission} />
             </div>
-=======
->>>>>>> e3467850beb133d5751683f6f0d9ce34f94ca84f
           </div>
         </div>
 
@@ -371,10 +365,7 @@ const AnnotationPage = () => {
           </div>
           <AnnotationCanvas
             ref={stageRef}
-<<<<<<< HEAD
             submissionId={id}
-=======
->>>>>>> e3467850beb133d5751683f6f0d9ce34f94ca84f
             imageUrl={getAbsoluteUrl(
               submission.annotatedImageUrl || submission.imageUrl
             )}
