@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { registerUser, loginUser } from "../api/auth";
-import { Shield, Mail, Lock, User, Hash } from "lucide-react";
+import { Shield, Mail, Lock, User } from "lucide-react";
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -16,7 +16,6 @@ const AuthPage = () => {
 
   const [formData, setFormData] = useState({
     name: "",
-    patientId: "",
     email: "",
     password: "",
   });
@@ -53,7 +52,6 @@ const AuthPage = () => {
       } else {
         response = await registerUser({
           name: formData.name,
-          patientId: signupRole === "patient" ? formData.patientId : undefined,
           email: formData.email,
           password: formData.password,
           role: signupRole,
@@ -141,29 +139,7 @@ const AuthPage = () => {
                   </div>
                 </div>
 
-                {signupRole === "patient" && (
-                  <div>
-                    <label
-                      htmlFor="patientId"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Patient ID
-                    </label>
-                    <div className="mt-1 relative">
-                      <Hash className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                      <input
-                        id="patientId"
-                        name="patientId"
-                        type="text"
-                        required={!isLogin}
-                        className="pl-10 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                        placeholder="Enter patient ID"
-                        value={formData.patientId}
-                        onChange={handleInputChange}
-                      />
-                    </div>
-                  </div>
-                )}
+
               </>
             )}
 
