@@ -166,15 +166,13 @@
 
         <div class="section-title">TREATMENT RECOMMENDATIONS:</div>
         <div class="recommendations">
-            <p>
-                <% if (annotationJson && annotationJson.recommendations) { %>
-                    <% annotationJson.recommendations.forEach(rec => { %>
-                        <p><strong><%= rec.title %>:</strong> <%= rec.text %></p>
-                    <% }); %>
-                <% } else { %>
-                    <p>No recommendations available.</p>
-                <% } %>
-            </p>
+            <% if (annotationJson && annotationJson.recommendations && annotationJson.recommendations.length > 0) { %>
+                <% annotationJson.recommendations.forEach(rec => { %>
+                    <p><strong><%= rec.title %>:</strong> <%= rec.text %></p>
+                <% }); %>
+            <% } else { %>
+                <p>No recommendations available.</p>
+            <% } %>
         </div>
     </div>
 </body>

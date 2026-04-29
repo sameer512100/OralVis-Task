@@ -9,7 +9,6 @@ import Layout from "../components/Layout";
 import AnnotationCanvas from "../components/AnnotationCanvas";
 import SubmissionTimeline from "../components/SubmissionTimeline";
 import { ArrowLeft, User, Hash, Mail, FileText, Download } from "lucide-react";
-import { useAuth } from "../context/AuthContext";
 
 const API_BASE_URL = "https://oralvis-backend-dxgf.onrender.com";
 function getAbsoluteUrl(url) {
@@ -32,7 +31,6 @@ const AnnotationPage = () => {
   const [newRecText, setNewRecText] = useState("");
   const [isMaximized, setIsMaximized] = useState(false);
   const stageRef = useRef();
-  const { token } = useAuth();
 
   useEffect(() => {
     loadSubmission();
@@ -115,26 +113,16 @@ const AnnotationPage = () => {
     setSuccess("");
 
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/submissions/${id}/generate-pdf`,
-        {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to generate PDF");
-      }
-
+      await generatePDF(id);
       setSuccess("PDF generated successfully!");
       await loadSubmission();
     } catch (error) {
-      setError(error.message || "Failed to generate PDF");
+      setError(
+        error.response?.data?.error ||
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to generate PDF"
+      );
     } finally {
       setGenerating(false);
     }

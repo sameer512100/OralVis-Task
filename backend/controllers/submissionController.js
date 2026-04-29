@@ -324,8 +324,12 @@ export const generatePDF = async (req, res) => {
   }
 
   try {
-    // FIXED: Generate a baseUrl so the Puppeteer PDF can correctly request your relative image URLs
     const baseUrl = `${req.protocol}://${req.get("host")}`;
+    const buildAbsoluteUrl = (fileUrl) => {
+      if (!fileUrl) return "";
+      if (/^https?:\/\//i.test(fileUrl)) return fileUrl;
+      return `${baseUrl}${fileUrl}`;
+    };
 
     const data = {
       name: submission.name,
@@ -333,10 +337,9 @@ export const generatePDF = async (req, res) => {
       email: submission.email,
       note: submission.note,
       createdAt: submission.createdAt,
-      annotatedImageUrl: submission.annotatedImageUrl || "",
-      imageUrl: submission.imageUrl || "",
+      annotatedImageUrl: buildAbsoluteUrl(submission.annotatedImageUrl),
+      imageUrl: buildAbsoluteUrl(submission.imageUrl),
       annotationJson: submission.annotationJson,
-      baseUrl: baseUrl, // <-- Pass this into your EJS template and use it like `<img src="<%= baseUrl %><%= imageUrl %>">`
     };
 
     const templatePath = path.join(
@@ -346,20 +349,27 @@ export const generatePDF = async (req, res) => {
 
     const htmlContent = await renderTemplate(templatePath, data);
 
-    const browser = await puppeteer.launch({
-      headless: true, // FIXED: Updated from deprecated "new" to true
-      executablePath: puppeteer.executablePath(),
+    const launchOptions = {
+      headless: "new",
       args: [
         "--no-sandbox",
         "--disable-setuid-sandbox",
         "--disable-dev-shm-usage",
         "--disable-gpu",
       ],
-    });
+    };
+
+    const executablePath =
+      process.env.PUPPETEER_EXECUTABLE_PATH || process.env.CHROME_BIN;
+    if (executablePath) {
+      launchOptions.executablePath = executablePath;
+    }
+
+    const browser = await puppeteer.launch(launchOptions);
 
     const page = await browser.newPage();
-    // Use waitUntil: networkidle0 so Puppeteer waits for your GridFS images to finish downloading
-    await page.setContent(htmlContent, { waitUntil: "networkidle0" });
+    await page.emulateMediaType("screen");
+    await page.setContent(htmlContent, { waitUntil: "load" });
 
     const pdfBuffer = await page.pdf({
       format: "A4",
